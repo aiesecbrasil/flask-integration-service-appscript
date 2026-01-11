@@ -1,8 +1,5 @@
-from .appscript_service import get_appscript,post_appscript,put_appscript,delete_appscript
+from .http_request import HttpClient
 
 __all__ = [
-    "get_appscript",
-    "post_appscript",
-    "put_appscript",
-    "delete_appscript"
+    "HttpClient"
 ]

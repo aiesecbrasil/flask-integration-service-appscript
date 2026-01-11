@@ -1,21 +1,22 @@
 from ..cache import cache
 from ..routes import Router
-from ..services import get_appscript,post_appscript
+from ..services import HttpClient
 from ..config import APPSCRIPT_METADADOS,APPSCRIPT_ADICIONAR_CARD
 from ..globals import request
 from ..http import responses
 
-router = Router(name="ogx")
+ogx = Router(name="ogx",url_prefix="/ogx")
+http = HttpClient()
 
-@router.get("/metadados-card")
-def metadados_card():
+@ogx.get("/metadados")
+def buscar_metadados():
     return cache.get_or_set(
         key="metadados_card",
-        fetch=lambda: get_appscript(APPSCRIPT_METADADOS)
+        fetch=lambda: http.get(APPSCRIPT_METADADOS)
     )
 
-@router.post("/adicionar-card")
-def adicionar_card():
+@ogx.post("/inscricoes")
+def criar_incricao():
     data = request.get_json()
     if not data:
         return responses.error("Dados não enviados")
@@ -24,7 +25,7 @@ def adicionar_card():
     if not validar_nome_com_acentos(nome):
         return responses.error("Nome inválido")
 
-    status, result = post_appscript(
+    status, result = http.post(
         APPSCRIPT_ADICIONAR_CARD,
         payload=data
     )
