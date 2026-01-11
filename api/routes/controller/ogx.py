@@ -1,12 +1,13 @@
-from ..cache import cache
-from ..routes import Router
-from ..services import HttpClient
-from ..config import APPSCRIPT_METADADOS,APPSCRIPT_ADICIONAR_CARD
-from ..globals import request
-from ..http import responses
+from .. import Router
+from api.cache import cache
+from api.services import HttpClient
+from api.config import APPSCRIPT_METADADOS, APPSCRIPT_ADICIONAR_CARD
+from api.globals import request
+from api.http import responses
 
-ogx = Router(name="ogx",url_prefix="/ogx")
+ogx = Router(name="ogx", url_prefix="/ogx")
 http = HttpClient()
+
 
 @ogx.get("/metadados")
 def buscar_metadados():
@@ -14,6 +15,7 @@ def buscar_metadados():
         key="metadados_card",
         fetch=lambda: http.get(APPSCRIPT_METADADOS)
     )
+
 
 @ogx.post("/inscricoes")
 def criar_incricao():
@@ -33,6 +35,4 @@ def criar_incricao():
     return responses.success(data=result, status=201)
 
 
-__all__ = [
-    "router"
-]
+__all__ = ["ogx"]

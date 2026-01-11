@@ -50,6 +50,4 @@ class Router:
             return fn
         return decorator
 
-__all__ = [
-    "Router"
-]
+__all__ = ["Router"]

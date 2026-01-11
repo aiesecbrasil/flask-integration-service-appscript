@@ -1,9 +1,9 @@
 from flask import Flask
 from flask_cors import CORS
-from .cache import cache   # 🔥 força a inicialização
 from .routes import ogx_router,psel_router
 from .middlewares import verificar_origem
 from .config import AMBIENTE, DOMINIOS_PERMITIDOS
+from .cache import cache   # 🔥 força a inicialização
 
 def create_app():
     app = Flask(__name__)
@@ -24,6 +24,4 @@ def create_app():
 
     return app
 
-__all__ = [
-    "create_app"
-]
+__all__ = ["create_app"]

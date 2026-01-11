@@ -17,10 +17,7 @@ Este módulo:
 """
 
 from ..globals.std import os, List
-from dotenv import load_dotenv
 
-
-load_dotenv(".env")
 
 # ================================
 # FUNÇÃO AUXILIAR
