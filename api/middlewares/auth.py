@@ -42,7 +42,6 @@ def verificar_origem():
     host: Optional[str] = request.headers.get("Host")
     print(request.headers)
     if host:
-        print(host)
         if host not in DOMINIOS_PERMITIDOS:
             return jsonify({"error": "Domínio não autorizado"}), 403
 
