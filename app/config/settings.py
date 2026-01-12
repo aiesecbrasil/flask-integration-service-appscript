@@ -76,6 +76,13 @@ API_KEYS_PERMITIDAS: List[str] = [
     k.strip() for k in get_env_or_fail("API_KEYS_PERMITIDAS").split(",")
 ]
 
+# ===============================
+# BANCO DE DADOS
+# ===============================
+DB_PRODUCAO=get_env_or_fail("DB_PRODUCAO")
+DB_TESTE=get_env_or_fail("DB_TESTE")
+DB_CONNECT=DB_PRODUCAO if IS_PRODUCTION else DB_TESTE
+
 
 # ================================
 # APPS SCRIPT
@@ -98,6 +105,27 @@ CACHE_TTL: int = int(get_env_or_fail("CACHE_TTL"))
 
 
 # ================================
+# PODIO - OGX
+# ================================
+CLIENT_ID_OGX=get_env_or_fail("CLIENT_ID_OGX")
+CLIENT_SECRET_OGX=get_env_or_fail("CLIENT_SECRET_OGX")
+APP_ID_OGX=get_env_or_fail("APP_ID_OGX")
+APP_TOKEN_OGX=get_env_or_fail("APP_TOKEN_OGX")
+
+# =================================
+# PODIO - PSEL
+# =================================
+CLIENT_ID_PSEL=get_env_or_fail("CLIENT_ID_PSEL")
+CLIENT_SECRET_PSEL=get_env_or_fail("CLIENT_SECRET_PSEL")
+APP_ID_PSEL=get_env_or_fail("APP_ID_PSEL")
+APP_TOKEN_PSEL=get_env_or_fail("APP_TOKEN_PSEL")
+
+# ================================
+# EXPA
+# ================================
+TOKEN_EXPA=get_env_or_fail("TOKEN_EXPA")
+
+# ================================
 # EXPORTS
 # ================================
 
@@ -112,11 +140,28 @@ __all__ = [
     "DOMINIOS_TESTE",
     "DOMINIOS_PERMITIDOS",
 
+    #banco de dados
+    "DB_CONNECT",
+
     # security
     "API_KEYS_PERMITIDAS",
 
     # cache
     "CACHE_TTL",
+
+    #podio
+    "CLIENT_ID_PSEL",
+    "CLIENT_SECRET_OGX",
+    "CLIENT_ID_OGX",
+    "CLIENT_SECRET_PSEL",
+    "APP_ID_OGX",
+    "APP_TOKEN_OGX",
+    "APP_ID_PSEL",
+    "APP_TOKEN_PSEL",
+    "APPSCRIPT_BUSCAR",
+
+    #expa
+    "TOKEN_EXPA",
 
     # apps script
     "APPSCRIPT_BUSCAR",

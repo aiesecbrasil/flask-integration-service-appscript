@@ -6,7 +6,7 @@ Middleware para validação de API Keys e domínios.
 """
 
 from ..config import API_KEYS_PERMITIDAS, DOMINIOS_PERMITIDOS, AMBIENTE
-from ..globals import urlparse, request, jsonify, List, Optional
+from ..globals import request, jsonify, List, Optional
 
 # ==============================
 # Configurações

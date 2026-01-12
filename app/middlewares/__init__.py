@@ -7,7 +7,9 @@ Inclui validação de API keys, verificação de domínios e outras funcionalida
 """
 
 from .auth import verificar_origem
+from .token_routes import verificar_rota
 
 __all__ = [
-    "verificar_origem"
+    "verificar_origem",
+    "verificar_rota"
 ]

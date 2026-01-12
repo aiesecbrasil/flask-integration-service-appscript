@@ -1,9 +1,9 @@
 from .. import Router
-from api.cache import cache
-from api.services import HttpClient
-from api.config import APPSCRIPT_METADADOS, APPSCRIPT_ADICIONAR_CARD
-from api.globals import request
-from api.http import responses
+from app.cache import cache
+from app.services import HttpClient
+from app.config import APPSCRIPT_METADADOS, APPSCRIPT_ADICIONAR_CARD
+from app.globals import request
+from app.http import responses
 
 ogx = Router(name="ogx", url_prefix="/ogx")
 http = HttpClient()

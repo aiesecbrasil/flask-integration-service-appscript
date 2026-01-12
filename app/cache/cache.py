@@ -5,21 +5,20 @@ cache.py
 Gerenciamento de cache em memória usando timestamps no horário de Recife.
 """
 
-from datetime import datetime
+
 import asyncio
-import pytz
 from ..globals import jsonify,Any, Callable, Dict, Tuple
 from ..config import CACHE_TTL
+from ..utils import agora_timestamp
 
 class CacheManager:
     def __init__(self):
         self.store: Dict[str, Dict[str, Any]] = {}
 
     def get_or_set(self, key: str, fetch: Callable[[], Tuple[Any, int]]):
-        # Hora atual em Recife
+        # Hora atual em São Paulo
 
-        tz = pytz.timezone("America/Recife")
-        now = datetime.now(tz).timestamp()
+        now = agora_timestamp()
 
         if key in self.store:
             item = self.store[key]

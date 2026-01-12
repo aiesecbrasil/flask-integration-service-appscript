@@ -108,22 +108,23 @@ class HttpClient:
         self,
         path: str = "",
         payload: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None
+        params: Optional[Dict[str, Any]] = None,
+        as_form: bool = False  # 👈 Adicione este parâmetro
     ) -> Tuple[int, Any]:
 
         timeout = self._consume_timeout()
         url = self._build_url(path, params)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.post(
-                url,
-                json=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                follow_redirects=True
-            )
+            # Seleciona o cabeçalho e o argumento correto do httpx
+            if as_form:
+                headers = {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}
+                # Usamos 'data' para Form Data
+                response = await client.post(url, data=payload, headers=headers, follow_redirects=True)
+            else:
+                headers = {"Content-Type": "application/json", "Accept": "application/json"}
+                # Usamos 'json' para JSON
+                response = await client.post(url, json=payload, headers=headers, follow_redirects=True)
             return response.status_code, response.json()
 
     async def put(
