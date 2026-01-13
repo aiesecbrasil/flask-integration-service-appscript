@@ -1,9 +1,10 @@
 from .. import Router
 from app.cache import cache
 from app.services import HttpClient
-from app.config import APPSCRIPT_METADADOS, APPSCRIPT_ADICIONAR_CARD
+from app.config import APP_ID_OGX, APPSCRIPT_ADICIONAR_CARD
 from app.globals import request
 from app.http import responses
+from app.api import metadados
 
 ogx = Router(name="ogx", url_prefix="/ogx")
 http = HttpClient()
@@ -11,10 +12,14 @@ http = HttpClient()
 
 @ogx.get("/metadados")
 def buscar_metadados():
-    return cache.get_or_set(
-        key="metadados_card",
-        fetch=lambda: http.get(APPSCRIPT_METADADOS)
+    cache.get_or_set(
+        key="metadados_card-ogx",
+        fetch=lambda: metadados(
+            chave="ogx-token-podio",
+            APP_ID=APP_ID_OGX
+        )
     )
+    return cache.store["metadados_card-ogx"]
 
 
 @ogx.post("/inscricoes")

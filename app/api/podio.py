@@ -15,7 +15,7 @@ def getAcessToken(item: dict, PATH: str = "/oauth/token") -> tuple[int, dict[str
     }
     try:
         # 🚀 Tenta a requisição
-        respose = http.post(PATH, payload, as_form=True)
+        respose = http.post(path=PATH, payload=payload, as_form=True)
 
         if asyncio.iscoroutine(respose):
             status, data = asyncio.run(respose)
@@ -46,4 +46,15 @@ def getAcessToken(item: dict, PATH: str = "/oauth/token") -> tuple[int, dict[str
 def buscarToken(chave):
     return cache.store[chave]["data"]["access_token"]
 
-__all__ = ["getAcessToken","buscarToken"]
+def metadados(chave,APP_ID):
+    hearders = {
+        "Authorization": f"Bearer {buscarToken(chave)}"
+    }
+    response = http.get(path=f"/app/{APP_ID}", headers=hearders)
+    if asyncio.iscoroutine(response):
+        status, data = asyncio.run(response)
+    else:
+        status, data = response
+    return status,data
+
+__all__ = ["getAcessToken","buscarToken","metadados"]

@@ -87,8 +87,12 @@ class HttpClient:
     async def get(
         self,
         path: str = "",
-        params: Optional[Dict[str, Any]] = None
+        params: Optional[Dict[str, Any]] = None,
+        headers=None
     ) -> Tuple[int, Any]:
+
+        if headers is None:
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
         timeout = self._consume_timeout()
         url = self._build_url(path, params)
@@ -96,10 +100,7 @@ class HttpClient:
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.get(
                 url,
-                headers={
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
+                headers=headers,
                 follow_redirects=True
             )
             return response.status_code, response.json()
@@ -109,8 +110,16 @@ class HttpClient:
         path: str = "",
         payload: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
-        as_form: bool = False  # 👈 Adicione este parâmetro
-    ) -> Tuple[int, Any]:
+        as_form: bool = False,  # 👈 Adicione este parâmetro
+        headers = None
+        ) -> Tuple[int, Any]:
+
+        if headers is None:
+            headers = {
+                "Content-Type": f"{
+                "application/x-www-form-urlencoded" if as_form else "application/json"}",
+                "Accept": "application/json"
+            }
 
         timeout = self._consume_timeout()
         url = self._build_url(path, params)
@@ -118,11 +127,9 @@ class HttpClient:
         async with httpx.AsyncClient(timeout=timeout) as client:
             # Seleciona o cabeçalho e o argumento correto do httpx
             if as_form:
-                headers = {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}
                 # Usamos 'data' para Form Data
                 response = await client.post(url, data=payload, headers=headers, follow_redirects=True)
             else:
-                headers = {"Content-Type": "application/json", "Accept": "application/json"}
                 # Usamos 'json' para JSON
                 response = await client.post(url, json=payload, headers=headers, follow_redirects=True)
             return response.status_code, response.json()
@@ -131,9 +138,14 @@ class HttpClient:
         self,
         path: str = "",
         payload: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None
+        params: Optional[Dict[str, Any]] = None,
+        headers=None
     ) -> Tuple[int, Any]:
-
+        if headers is None:
+            headers = {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+            }
         timeout = self._consume_timeout()
         url = self._build_url(path, params)
 
@@ -141,10 +153,7 @@ class HttpClient:
             response = await client.put(
                 url,
                 json=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
+                headers=headers,
                 follow_redirects=True
             )
             return response.status_code, response.json()
@@ -152,19 +161,21 @@ class HttpClient:
     async def delete(
         self,
         path: str = "",
-        params: Optional[Dict[str, Any]] = None
+        params: Optional[Dict[str, Any]] = None,
+        headers = None
     ) -> Tuple[int, Any]:
-
+        if headers is None:
+            headers = {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+            }
         timeout = self._consume_timeout()
         url = self._build_url(path, params)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.delete(
                 url,
-                headers={
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
+                headers=headers,
                 follow_redirects=True
             )
             return response.status_code, response.json()

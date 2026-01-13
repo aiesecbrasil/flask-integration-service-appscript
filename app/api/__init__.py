@@ -1,5 +1,5 @@
-from .token_podio import *
+from .podio import *
 
 __all__ = [
-    token_podio.__all__
+    podio.__all__
 ]

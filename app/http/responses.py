@@ -14,7 +14,6 @@ Este módulo:
 - NÃO depende de Flask ou FastAPI
 - Retorna dicionários prontos para JSON
 """
-
 from ..globals.std import Dict, Any, Optional
 
 # ================================
@@ -24,7 +23,7 @@ def success(
     data: Any,
     message: Optional[str] = None,
     status: int = 200
-) -> Dict[str, Any]:
+) -> dict[str, str | int | Any]:
     """
     Retorna resposta de sucesso padrão.
 
@@ -51,7 +50,7 @@ def error(
     erro: str,
     details: Optional[Any] = None,
     status: int = 400
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Retorna resposta de erro padrão.
 
@@ -63,7 +62,7 @@ def error(
     Returns:
         Dict[str, Any]: Estrutura da resposta.
     """
-    resp: Dict[str, Any] = {
+    resp: Dict[str,Any] = {
         "status": "error",
         "error": erro,
         "status_code": status
@@ -79,7 +78,7 @@ def error(
 def redirect(
     url: str,
     status: int = 302
-) -> Dict[str, Any]:
+) -> dict[str, str | int]:
     """
     Retorna resposta de redirecionamento.
 
@@ -91,7 +90,7 @@ def redirect(
         Dict[str, Any]: Estrutura da resposta.
     """
     return {
-        "status": "redirect",
+        "status": f"Redirecionado para {url}",
         "url": url,
         "status_code": status
     }
