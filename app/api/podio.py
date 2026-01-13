@@ -48,7 +48,8 @@ def buscarToken(chave):
 
 def metadados(chave,APP_ID):
     hearders = {
-        "Authorization": f"Bearer {buscarToken(chave)}"
+        "Authorization": f"Bearer {buscarToken(chave)}",
+        "Content-Type": "application/json"
     }
     response = http.get(path=f"/app/{APP_ID}", headers=hearders)
     if asyncio.iscoroutine(response):
