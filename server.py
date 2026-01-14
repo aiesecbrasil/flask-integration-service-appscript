@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
-load_dotenv(".env")
+
+# Ele descobre a pasta do script e junta com '.env'
+path_atual = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(path_atual, ".env"))
 
 from app import create_app
 from waitress import serve

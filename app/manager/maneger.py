@@ -1,19 +1,26 @@
-import os # Os fornece uma maneira de usar funcionalidades dependentes do sistema operacional, como verificar se um diretório existe.
-from flask_migrate import init,migrate,upgrade,Migrate # Migrate é a classe para gerenciar migrações e init é a função para inicializar as migrações.
+import os
+from flask_migrate import init, migrate, upgrade, Migrate
+
 migrates = Migrate()
-def migration() -> None:  # O '-> None' indica que esta função não retornará nada.
-    """
-    Função para inicializar o diretório de migrações.
-    Esta função verifica se o diretório 'migrations' existe e, caso não exista, inicializa as migrações.
-    """
-    if not os.path.exists('migrations'):  # Verificando se o diretório 'migrations' não existe.
-        init()  # Inicializando as migrações.
-    migrate()
-    upgrade()
 
 
-__all__ = [
-    "migration",
-    "migrates",
-    "upgrade"
-]
+def migration() -> None:
+    # 1. Pega o caminho de: /home/BaziAiesectest/flask-integration-service-appscript/app/manager/
+    diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+
+    # 2. Sobe dois níveis para chegar em: /home/BaziAiesectest/flask-integration-service-appscript/
+    raiz_projeto = os.path.abspath(os.path.join(diretorio_atual, "..", ".."))
+
+    # 3. Define a pasta migrations na raiz
+    migrations_dir = os.path.join(raiz_projeto, 'migrations')
+
+    if not os.path.exists(migrations_dir):
+        print(f"Criando diretório de migrações em: {migrations_dir}")
+        init(directory=migrations_dir)
+
+    try:
+        print("Executando migrate e upgrade...")
+        migrate(directory=migrations_dir)
+        upgrade(directory=migrations_dir)
+    except Exception as e:
+        print(f"Erro na migração: {e}")
