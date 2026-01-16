@@ -1,5 +1,7 @@
-from ..globals.std import datetime,date,re,unicodedata,Dict,Any
+import base64
+from ..globals.std import datetime,date,re,unicodedata,Dict,Any,List
 from .gerador import gerar_email
+
 
 def validar_codigo_membresia(codigo: str) -> bool:
     """

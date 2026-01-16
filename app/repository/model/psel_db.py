@@ -14,7 +14,7 @@ class LeadPsel(db.Model):
     telefones = db.relationship('Telefone', backref='lead_psel', cascade="all, delete-orphan")
 
     # Outros campos
-    aiesec_mais_proxima = db.Column(db.String(150),nullable=False)
+    aiesec_mais_proxima = db.Column(db.Integer,nullable=False)
     data_criacao = db.Column(db.DateTime, default=agora)  # junta dia/mês/ano
     expiracao = db.Column(db.DateTime, default=expiracao_3dias)
     token = db.Column(db.String(255), default=gerar_token,unique=True, nullable=False)

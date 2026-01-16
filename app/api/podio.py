@@ -1,11 +1,14 @@
-from ..globals import asyncio,Any
+from ..globals import Any,Dict
 from ..services import HttpClient
 from ..utils import agora
 from ..cache import cache
+from ..utils import resolve_response
 
 http = HttpClient(base_url="https://api.podio.com")
+http2 = http.clone(prefix="/item/app/")
 
-def getAcessToken(item: dict, PATH: str = "/oauth/token") -> tuple[int, dict[str, Any]]:
+@typed
+def getAcessToken(item: Dict[str,Any], PATH: str = "/oauth/token") -> tuple[int, dict[str, Any]]:
     payload = {
         "grant_type": "app",
         "client_id": item["CLIENT_ID"],
@@ -17,10 +20,8 @@ def getAcessToken(item: dict, PATH: str = "/oauth/token") -> tuple[int, dict[str
         # 🚀 Tenta a requisição
         respose = http.post(path=PATH, payload=payload, as_form=True)
 
-        if asyncio.iscoroutine(respose):
-            status, data = asyncio.run(respose)
-        else:
-            status, data = respose
+
+        status, data = resolve_response(respose)
 
         # 🛑 Se o Podio retornar erro, levantamos uma exceção para parar tudo
         if status != 200:
@@ -43,19 +44,33 @@ def getAcessToken(item: dict, PATH: str = "/oauth/token") -> tuple[int, dict[str
         # Para tudo em caso de erro de conexão ou qualquer outro problema
         raise RuntimeError(f"Erro Fatal na integração: {str(e)}") from e
 
-def buscarToken(chave):
+@typed
+def buscarToken(chave:str) -> str:
     return cache.store[chave]["data"]["access_token"]
 
-def metadados(chave,APP_ID):
-    hearders = {
+@typed
+def metadados(chave:str,APP_ID:int):
+    headers = {
         "Authorization": f"Bearer {buscarToken(chave)}",
         "Content-Type": "application/json"
     }
-    response = http.get(path=f"/app/{APP_ID}", headers=hearders)
-    if asyncio.iscoroutine(response):
-        status, data = asyncio.run(response)
-    else:
-        status, data = response
+    response = http.get(path=f"/app/{APP_ID}", headers=headers)
+
+    status, data = resolve_response(response)
+    return status,data
+
+@typed
+def adicionar_lead(chave:str,data:dict[str,Any],APP_ID:int):
+    headers = {
+        "Authorization": f"Bearer ${buscarToken(chave)}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    payload = data
+
+    response = http2.post(path=f"{APP_ID}",payload=payload,headers=headers)
+    status, data = resolve_response(response)
+
     return status,data
 
 __all__ = ["getAcessToken","buscarToken","metadados"]

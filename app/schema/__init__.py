@@ -1,8 +1,8 @@
-from .schema import ma,TelefoneSchema,EmailSchema,LeadPselSchema
+from .schema import ma,LeadPselSchema,lead_schema,leads_schema
 
 __all__ = [
     "ma",
-    "TelefoneSchema",
-    "EmailSchema",
-    "LeadPselSchema"
+    "LeadPselSchema",
+    "lead_schema",
+    "leads_schema"
 ]

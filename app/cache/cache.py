@@ -9,7 +9,7 @@ Gerenciamento de cache em memória usando timestamps no horário de Recife.
 import asyncio
 from ..globals import jsonify,Any, Callable, Dict, Tuple
 from ..config import CACHE_TTL
-from ..utils import agora_timestamp
+from ..utils import agora_timestamp,resolve_response
 
 class CacheManager:
     def __init__(self):
@@ -26,10 +26,7 @@ class CacheManager:
                 return jsonify(item["data"]), 200
 
         result = fetch()
-        if asyncio.iscoroutine(result):
-            status, data = asyncio.run(result)  # roda e espera o resultado
-        else:
-            status,data = result
+        status,data = resolve_response(result)
 
         self.store[key] = {
             "data": data,

@@ -7,7 +7,6 @@ migrates = Migrate()
 def migration() -> None:
     # 1. Pega o caminho de: /home/BaziAiesectest/flask-integration-service-appscript/app/manager/
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
-
     # 2. Sobe dois níveis para chegar em: /home/BaziAiesectest/flask-integration-service-appscript/
     raiz_projeto = os.path.abspath(os.path.join(diretorio_atual, "..", ".."))
 

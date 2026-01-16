@@ -10,11 +10,14 @@ class EmailSchema(ma.SQLAlchemyAutoSchema):
         model = Email
         load_instance = True  # Permite criar instâncias do modelo ao carregar dados
         include_fk = True     # Inclui a chave estrangeira no JSON se necessário
+        exclude = ("id",)
 
 class TelefoneSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Telefone
         load_instance = True
+        include_fk = True  # Inclui a chave estrangeira no JSON se necessário
+        exclude = ("id",)
 
 class LeadPselSchema(ma.SQLAlchemyAutoSchema):
     # Relacionamentos Aninhados

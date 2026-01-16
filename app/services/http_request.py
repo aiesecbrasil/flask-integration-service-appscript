@@ -180,5 +180,56 @@ class HttpClient:
             )
             return response.status_code, response.json()
 
+    def clone(self, **kwargs) -> "HttpClient":
+        """
+        Cria uma nova instância de HttpClient a partir da instância atual,
+        permitindo sobrescrever propriedades específicas via kwargs.
+
+        O clone:
+        - NÃO compartilha estado com a instância original
+        - NÃO utiliza deepcopy
+        - Copia apenas valores imutáveis (seguro e performático)
+        - Permite override explícito de configuração
+
+        Parâmetros aceitos em kwargs:
+            base_url (str):
+                Sobrescreve a URL base do cliente.
+            prefix (str):
+                Sobrescreve o prefixo de rota.
+            timeout (Optional[float]):
+                Define o timeout base da nova instância.
+            timeout_override (Optional[float]):
+                Copia ou sobrescreve o timeout temporário (override).
+
+        Retorno:
+            HttpClient:
+                Nova instância independente do cliente HTTP.
+
+        Exemplo de uso:
+            client = HttpClient(
+                base_url="https://api.exemplo.com",
+                prefix="v1",
+                timeout=5.0
+            )
+
+            client2 = client.clone(timeout=10.0)
+
+            # client permanece intacto
+            # client2 possui timeout diferente
+        """
+
+        client = HttpClient(
+            base_url=kwargs.get("base_url", self._base_url),
+            prefix=kwargs.get("prefix", self._prefix),
+            timeout=kwargs.get("timeout", self._timeout_base),
+        )
+
+        client._timeout_override = kwargs.get(
+            "timeout_override",
+            self._timeout_override
+        )
+
+        return client
+
 
 __all__ = ["HttpClient"]

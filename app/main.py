@@ -8,6 +8,8 @@ from .middlewares import verificar_origem,verificar_rota
 from .config import AMBIENTE, DOMINIOS_PERMITIDOS,DB_CONNECT
 from .cache import cache   # 🔥 força a inicialização
 
+
+
 def create_app():
     app = Flask(__name__)
 

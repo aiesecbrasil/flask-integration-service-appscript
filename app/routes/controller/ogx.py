@@ -6,12 +6,13 @@ from app.globals import request
 from app.http import responses
 from app.api import metadados
 
+
 ogx = Router(name="ogx", url_prefix="/ogx")
 http = HttpClient()
 
 
 @ogx.get("/metadados")
-def buscar_metadados():
+def buscar_metadados()->dict:
     cache.get_or_set(
         key="metadados_card-ogx",
         fetch=lambda: metadados(
@@ -37,7 +38,13 @@ def criar_incricao():
         payload=data
     )
 
-    return responses.success(data=result, status=201)
+    return "oi"
 
+
+@ogx.post("/teste")
+@typed
+def teste() -> dict[str,int]:
+    data = request.get_json()
+    return data
 
 __all__ = ["ogx"]
