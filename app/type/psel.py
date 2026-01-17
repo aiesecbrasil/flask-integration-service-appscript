@@ -77,13 +77,6 @@ class LeadPselInput(BaseModel):
 class LeadPselPodio(LeadPselInput):
     """Transforma o Lead validado no formato JSON aceito pelo Podio."""
 
-    def __init__(self, data):
-        # Lógica para aceitar tanto dict quanto objetos Pydantic do @typed
-        if len(data) == 1 and isinstance(next(iter(data.values())), BaseModel):
-            actual_obj = next(iter(data.values()))
-            data = actual_obj.model_dump(by_alias=True)
-        super().__init__(**data)
-
     def to_podio_payload(self) -> dict:
         """Mapeia os campos do Pydantic para os slugs do Podio."""
         return {

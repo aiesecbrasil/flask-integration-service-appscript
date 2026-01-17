@@ -59,19 +59,27 @@ class HttpClient:
     # ================================
 
     def _build_url(
-        self,
-        path: str = "",
-        params: Optional[Dict[str, Any]] = None
+            self,
+            path: str = "",
+            params: Optional[Dict[str, Any]] = None
     ) -> str:
         if self._base_url:
-            parts = [self._base_url]
+            # 1. Base: Tiramos a barra da direita (rstrip) para garantir o início
+            parts = [self._base_url.rstrip("/")]
 
+            # 2. Prefixo: Tiramos barras de ambos os lados (strip)
             if self._prefix:
-                parts.append(self._prefix)
+                clean_prefix = self._prefix.strip("/")
+                if clean_prefix:  # Evita adicionar strings vazias
+                    parts.append(clean_prefix)
 
+            # 3. Path: Tiramos barras de ambos os lados (strip)
             if path:
-                parts.append(path.strip("/"))
+                clean_path = path.strip("/")
+                if clean_path:
+                    parts.append(clean_path)
 
+            # 4. Junta tudo: O "/" será o único separador entre as partes
             url = "/".join(parts)
 
             if params:
@@ -181,54 +189,17 @@ class HttpClient:
             return response.status_code, response.json()
 
     def clone(self, **kwargs) -> "HttpClient":
-        """
-        Cria uma nova instância de HttpClient a partir da instância atual,
-        permitindo sobrescrever propriedades específicas via kwargs.
+        # Se 'prefix' não for passado no kwargs, ele usa o da instância atual.
+        # Se for passado, ele substitui completamente.
+        new_prefix = kwargs.get("prefix", self._prefix)
 
-        O clone:
-        - NÃO compartilha estado com a instância original
-        - NÃO utiliza deepcopy
-        - Copia apenas valores imutáveis (seguro e performático)
-        - Permite override explícito de configuração
-
-        Parâmetros aceitos em kwargs:
-            base_url (str):
-                Sobrescreve a URL base do cliente.
-            prefix (str):
-                Sobrescreve o prefixo de rota.
-            timeout (Optional[float]):
-                Define o timeout base da nova instância.
-            timeout_override (Optional[float]):
-                Copia ou sobrescreve o timeout temporário (override).
-
-        Retorno:
-            HttpClient:
-                Nova instância independente do cliente HTTP.
-
-        Exemplo de uso:
-            client = HttpClient(
-                base_url="https://api.exemplo.com",
-                prefix="v1",
-                timeout=5.0
-            )
-
-            client2 = client.clone(timeout=10.0)
-
-            # client permanece intacto
-            # client2 possui timeout diferente
-        """
-
+        # Criamos a nova instância sempre tratando as barras
         client = HttpClient(
             base_url=kwargs.get("base_url", self._base_url),
-            prefix=kwargs.get("prefix", self._prefix),
+            prefix=new_prefix,
             timeout=kwargs.get("timeout", self._timeout_base),
         )
-
-        client._timeout_override = kwargs.get(
-            "timeout_override",
-            self._timeout_override
-        )
-
+        client._timeout_override = kwargs.get("timeout_override", self._timeout_override)
         return client
 
 

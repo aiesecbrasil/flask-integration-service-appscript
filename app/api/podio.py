@@ -1,13 +1,16 @@
-from ..globals import Any,Dict
+from flask import Response
+
+from ..globals import Any,Dict,Tuple,jsonify
 from ..services import HttpClient
 from ..utils import agora
 from ..cache import cache
 from ..utils import resolve_response
 
 http = HttpClient(base_url="https://api.podio.com")
-http2 = http.clone(prefix="/item/app/")
+http2 = http.clone(prefix="/item/app")
+http3 = http2.clone(prefix="/item")
 
-@typed
+@validar
 def getAcessToken(item: Dict[str,Any], PATH: str = "/oauth/token") -> tuple[int, dict[str, Any]]:
     payload = {
         "grant_type": "app",
@@ -22,7 +25,6 @@ def getAcessToken(item: Dict[str,Any], PATH: str = "/oauth/token") -> tuple[int,
 
 
         status, data = resolve_response(respose)
-
         # 🛑 Se o Podio retornar erro, levantamos uma exceção para parar tudo
         if status != 200:
             error_msg = data.get("error_description", "Erro desconhecido no Podio")
@@ -44,12 +46,12 @@ def getAcessToken(item: Dict[str,Any], PATH: str = "/oauth/token") -> tuple[int,
         # Para tudo em caso de erro de conexão ou qualquer outro problema
         raise RuntimeError(f"Erro Fatal na integração: {str(e)}") from e
 
-@typed
-def buscarToken(chave:str) -> str:
+@validar
+def buscarToken(chave:str) -> int:
     return cache.store[chave]["data"]["access_token"]
 
-@typed
-def metadados(chave:str,APP_ID:int):
+@validar
+def metadados(chave:str,APP_ID:int) -> Tuple[int,dict]:
     headers = {
         "Authorization": f"Bearer {buscarToken(chave)}",
         "Content-Type": "application/json"
@@ -59,18 +61,42 @@ def metadados(chave:str,APP_ID:int):
     status, data = resolve_response(response)
     return status,data
 
-@typed
-def adicionar_lead(chave:str,data:dict[str,Any],APP_ID:int):
+@validar
+def adicionar_lead(chave:str,data:Any,APP_ID:int) -> tuple[dict, int]:
+
     headers = {
-        "Authorization": f"Bearer ${buscarToken(chave)}",
+        "Authorization": f"Bearer {buscarToken(chave)}",
         "Content-Type": "application/json",
         "Accept": "application/json"
     }
-    payload = data
+    payload = data.model_dump()
+    response = http2.post(path=f"/{APP_ID}",payload=payload,headers=headers)
+    status, data = resolve_response(response)
 
-    response = http2.post(path=f"{APP_ID}",payload=payload,headers=headers)
+    return data,buscar_id_lead(data)
+
+@validar
+def atualizar_lead(chave:str,data:Any,data_response:dict) -> Tuple[int,int]:
+    item_id = buscar_id_card(data_response)
+    headers = {
+        "Authorization": f"Bearer {buscarToken(chave)}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+
+    payload = data.model_dump()
+
+    response = http3.put(path=f"/{item_id}",payload=payload,headers=headers)
     status, data = resolve_response(response)
 
     return status,data
 
-__all__ = ["getAcessToken","buscarToken","metadados"]
+@validar
+def buscar_id_lead(data:dict) -> int:
+    return data["app_item_id"]
+
+@validar
+def buscar_id_card(data:dict) -> int:
+    return data["item_id"]
+
+__all__ = ["getAcessToken","buscarToken","metadados","adicionar_lead","atualizar_lead"]
