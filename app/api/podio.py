@@ -1,8 +1,4 @@
-from typing import Any
-
-from flask import Response
-
-from ..globals import Any,Dict,Tuple,jsonify
+from ..globals import Any,Dict,Tuple
 from ..services import HttpClient
 from ..utils import agora
 from ..cache import cache
@@ -94,7 +90,8 @@ def atualizar_lead(chave:str,data:Any,data_response:dict) -> Tuple[int,int]:
     return item_id,data
 
 @validar
-def remover_lead(chave:str,item_id:int) -> bool | tuple[bool, Any]:
+def remover_lead(chave:str,data_response:dict) -> bool | tuple[bool, Any]:
+    item_id = buscar_id_card(data_response)
     headers = {
         "Authorization": f"Bearer {buscarToken(chave)}",
         "Content-Type": "application/json",

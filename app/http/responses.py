@@ -14,6 +14,8 @@ Este módulo:
 - NÃO depende de Flask ou FastAPI
 - Retorna dicionários prontos para JSON
 """
+from typing import Any
+
 from ..globals.std import Dict, Any, Optional
 
 # ================================
@@ -23,7 +25,7 @@ def success(
     data: Any,
     message: Optional[str] = None,
     status: int = 200
-) -> dict[str, str | int | Any]:
+) -> tuple[dict[str, str | int | Any], int]:
     """
     Retorna resposta de sucesso padrão.
 
@@ -33,14 +35,14 @@ def success(
         status (int, optional): Código HTTP (default=200).
 
     Returns:
-        Dict[str, Any]: Estrutura da resposta.
+        tuple[dict[str, str | int], int]: Estrutura da resposta.
     """
     return {
         "status": "success",
         "message": message or "Operação realizada com sucesso",
         "data": data,
         "status_code": status
-    }
+    },status
 
 
 # ================================
@@ -50,7 +52,7 @@ def error(
     erro: str,
     details: Optional[Any] = None,
     status: int = 400
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], int]:
     """
     Retorna resposta de erro padrão.
 
@@ -60,7 +62,7 @@ def error(
         status (int, optional): Código HTTP (default=400).
 
     Returns:
-        Dict[str, Any]: Estrutura da resposta.
+        tuple[dict[str, Any], int]: Estrutura da resposta.
     """
     resp: Dict[str,Any] = {
         "status": "error",
@@ -69,7 +71,7 @@ def error(
     }
     if details is not None:
         resp["details"] = details
-    return resp
+    return resp,status
 
 
 # ================================
@@ -78,7 +80,7 @@ def error(
 def redirect(
     url: str,
     status: int = 302
-) -> dict[str, str | int]:
+) -> tuple[dict[str, str | int], int]:
     """
     Retorna resposta de redirecionamento.
 
@@ -87,13 +89,13 @@ def redirect(
         status (int, optional): Código HTTP (default=302).
 
     Returns:
-        Dict[str, Any]: Estrutura da resposta.
+        tuple[dict[str, str | int], int]: Estrutura da resposta.
     """
     return {
         "status": f"Redirecionado para {url}",
         "url": url,
         "status_code": status
-    }
+    },status
 
 
 # ================================

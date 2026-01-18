@@ -15,7 +15,6 @@ Este módulo:
 - NÃO importa código de rotas ou services
 - FALHA rápido se configuração estiver errada
 """
-
 from ..globals.std import os, List
 
 
@@ -58,7 +57,6 @@ if not (IS_PRODUCTION or IS_NON_PROD):
 # ================================
 # DOMÍNIOS
 # ================================
-
 DOMINIOS_PRODUCAO: List[str] = get_env_or_fail("DOMINIOS_PRODUCAO").split(",")
 
 DOMINIOS_TESTE: List[str] = get_env_or_fail("DOMINIOS_TESTE").split(",")
@@ -71,7 +69,6 @@ DOMINIOS_PERMITIDOS: List[str] = DOMINIOS_PRODUCAO if IS_PRODUCTION else DOMINIO
 # ================================
 # API KEYS
 # ================================
-
 API_KEYS_PERMITIDAS: List[str] = [
     k.strip() for k in get_env_or_fail("API_KEYS_PERMITIDAS").split(",")
 ]
@@ -83,24 +80,27 @@ DB_PRODUCAO=get_env_or_fail("DB_PRODUCAO")
 DB_TESTE=get_env_or_fail("DB_TESTE")
 DB_CONNECT=DB_PRODUCAO if IS_PRODUCTION else DB_TESTE
 
+# ===============================
+# URL
+# ===============================
+URL_PRODUCAO=get_env_or_fail("URL_PRODUCAO")
+URL_TESTE=get_env_or_fail("URL_TESTE")
+URL_CONNECT=URL_PRODUCAO if IS_PRODUCTION else URL_TESTE
+
 
 # ================================
 # APPS SCRIPT
 # ================================
-
 APPSCRIPT_BUSCAR = get_env_or_fail("APPSCRIPT_BUSCAR")
 APPSCRIPT_INSERIR = get_env_or_fail("APPSCRIPT_INSERIR")
 APPSCRIPT_METADADOS = get_env_or_fail("APPSCRIPT_METADADOS_CARD_OGX")
 APPSCRIPT_ADICIONAR_CARD = get_env_or_fail("APPSCRIPT_ADICIONAR_CARD_OGX")
-APPSCRIPT_VALIDAR_URL = get_env_or_fail("APPSCRIPT_VALIDAR_URL")
-APPSCRIPT_LEAD_PSEL = get_env_or_fail("APPSCRIPT_ADICIONAR_LEADS_PSEL")
-APPSCRIPT_METADADOS_PSEL = get_env_or_fail("APPSCRIPT_METADADOS_LEAD_PSEL")
+ID_APPSCRIPT_EMAIL_LEADS_PSEL = get_env_or_fail("ID_APPSCRIPT_EMAIL_LEADS_PSEL")
 
 
 # ================================
 # CACHE
 # ================================
-
 CACHE_TTL: int = int(get_env_or_fail("CACHE_TTL"))
 
 
@@ -143,6 +143,9 @@ __all__ = [
     #banco de dados
     "DB_CONNECT",
 
+    #URL
+    "URL_CONNECT",
+
     # security
     "API_KEYS_PERMITIDAS",
 
@@ -158,7 +161,6 @@ __all__ = [
     "APP_TOKEN_OGX",
     "APP_ID_PSEL",
     "APP_TOKEN_PSEL",
-    "APPSCRIPT_BUSCAR",
 
     #expa
     "TOKEN_EXPA",
@@ -168,7 +170,5 @@ __all__ = [
     "APPSCRIPT_INSERIR",
     "APPSCRIPT_METADADOS",
     "APPSCRIPT_ADICIONAR_CARD",
-    "APPSCRIPT_VALIDAR_URL",
-    "APPSCRIPT_LEAD_PSEL",
-    "APPSCRIPT_METADADOS_PSEL",
+    "ID_APPSCRIPT_EMAIL_LEADS_PSEL"
 ]
