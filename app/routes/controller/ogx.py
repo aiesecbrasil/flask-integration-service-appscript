@@ -42,7 +42,6 @@ def criar_incricao():
 
 
 @ogx.post("/teste")
-@typed
 def teste() -> dict[str,int]:
     data = request.get_json()
     return data

@@ -1,3 +1,3 @@
-from .typed import typed
 
-__all__ = ["typed"]
+
+__all__ = [""]

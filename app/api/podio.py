@@ -1,3 +1,5 @@
+from typing import Any
+
 from flask import Response
 
 from ..globals import Any,Dict,Tuple,jsonify
@@ -89,14 +91,38 @@ def atualizar_lead(chave:str,data:Any,data_response:dict) -> Tuple[int,int]:
     response = http3.put(path=f"/{item_id}",payload=payload,headers=headers)
     status, data = resolve_response(response)
 
-    return status,data
+    return item_id,data
+
+@validar
+def remover_lead(chave:str,item_id:int) -> bool | tuple[bool, Any]:
+    headers = {
+        "Authorization": f"Bearer {buscarToken(chave)}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    response = http3.delete(path=f"/{item_id}",headers=headers)
+    status,data = resolve_response(response)
+
+    if status == 204:
+        return True
+    else:
+        return False, data
 
 @validar
 def buscar_id_lead(data:dict) -> int:
-    return data["app_item_id"]
+    return data.get("app_item_id")
 
 @validar
 def buscar_id_card(data:dict) -> int:
-    return data["item_id"]
+    return data.get("item_id")
 
-__all__ = ["getAcessToken","buscarToken","metadados","adicionar_lead","atualizar_lead"]
+__all__ = [
+    "getAcessToken",
+    "buscarToken",
+    "metadados",
+    "adicionar_lead",
+    "atualizar_lead",
+    "remover_lead",
+    "buscar_id_card",
+    "buscar_id_lead"
+]

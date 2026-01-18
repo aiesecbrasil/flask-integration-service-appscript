@@ -166,6 +166,30 @@ class HttpClient:
             )
             return response.status_code, response.json()
 
+    async def patch(
+        self,
+        path: str = "",
+        payload: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers=None
+    ) -> Tuple[int, Any]:
+        if headers is None:
+            headers = {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+            }
+        timeout = self._consume_timeout()
+        url = self._build_url(path, params)
+
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.patch(
+                url,
+                json=payload,
+                headers=headers,
+                follow_redirects=True
+            )
+            return response.status_code, response.json()
+
     async def delete(
         self,
         path: str = "",
@@ -186,7 +210,15 @@ class HttpClient:
                 headers=headers,
                 follow_redirects=True
             )
-            return response.status_code, response.json()
+            # 🛡️ PROTEÇÃO CONTRA CORPO VAZIO (STATUS 204)
+            if response.status_code == 204 or not response.content:
+                return response.status_code, None
+
+            try:
+                return response.status_code, response.json()
+            except Exception:
+                # Se não for JSON, retorna como texto puro
+                return response.status_code, response.text
 
     def clone(self, **kwargs) -> "HttpClient":
         # Se 'prefix' não for passado no kwargs, ele usa o da instância atual.

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask_openapi3 import OpenAPI, Info
 from flask_cors import CORS
 from .repository import db
 from .schema import ma
@@ -11,7 +11,10 @@ from .cache import cache   # 🔥 força a inicialização
 
 
 def create_app():
-    app = Flask(__name__)
+    app = OpenAPI(
+        __name__,
+        info=Info(title="API", version="2.0.0")
+    )
 
     if AMBIENTE == "PRODUCTION":
         CORS(app, origins=[f"https://{d}" for d in DOMINIOS_PERMITIDOS])
@@ -33,8 +36,8 @@ def create_app():
     # ==============================
     # Registro de rotas
     # ==============================
-    app.register_blueprint(ogx_router.bp)
-    app.register_blueprint(psel_router.bp)
+    app.register_api(ogx_router.router)
+    app.register_api(psel_router.router)
     """app.register_blueprint()
     app.register_blueprint()"""
 
