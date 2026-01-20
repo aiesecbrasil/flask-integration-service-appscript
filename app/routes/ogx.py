@@ -1,6 +1,5 @@
-from .. import Router
+from app.routes import Router
 from app.cache import cache
-from app.services import HttpClient
 from app.config import APP_ID_OGX, APPSCRIPT_ADICIONAR_CARD
 from app.globals import request
 from app.http import responses
@@ -8,7 +7,6 @@ from app.api import metadados
 
 
 ogx = Router(name="ogx", url_prefix="/ogx")
-http = HttpClient()
 
 
 @ogx.get("/metadados")

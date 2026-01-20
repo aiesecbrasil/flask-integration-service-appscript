@@ -1,8 +1,8 @@
-from ..globals import Any,Dict,Tuple
-from ..services import HttpClient
-from ..utils import agora
-from ..cache import cache
-from ..utils import resolve_response
+from .http_request import HttpClient
+from app.globals import Any,Dict,Tuple
+from app.utils import agora
+from app.cache import cache
+from app.utils import resolve_response
 
 http = HttpClient(base_url="https://api.podio.com")
 http2 = http.clone(prefix="/item/app")

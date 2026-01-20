@@ -1,6 +1,6 @@
-from ..services import HttpClient
-from ..config import ID_APPSCRIPT_EMAIL_LEADS_PSEL
-from ..utils import resolve_response
+from .http_request import HttpClient
+from app.config import ID_APPSCRIPT_EMAIL_LEADS_PSEL
+from app.utils import resolve_response
 
 http = HttpClient(base_url="https://script.google.com",prefix="/macros/s")
 

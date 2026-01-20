@@ -1,5 +1,5 @@
-from .http_request import HttpClient
+from .psel import *
 
 __all__ = [
-    "HttpClient"
+    "cadastrar_lead_psel_service"
 ]

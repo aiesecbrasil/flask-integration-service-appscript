@@ -1,5 +1,6 @@
 from .router import Router
-from .controller import ogx_router,psel_router
+from .ogx import ogx as ogx_router
+from .psel import psel as psel_router
 __all__ = [
     "Router",
     "ogx_router",

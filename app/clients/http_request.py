@@ -1,4 +1,4 @@
-from ..globals import httpx, Dict, Any,Tuple,Optional
+from app.globals import httpx, Dict, Any,Tuple,Optional
 from urllib.parse import urlencode
 
 class HttpClient:
