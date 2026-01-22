@@ -67,7 +67,7 @@ def adicionar_lead(chave:str,data:Any,APP_ID:int) -> tuple[dict, int]:
         "Content-Type": "application/json",
         "Accept": "application/json"
     }
-    payload = data.model_dump()
+    payload = data
     response = http2.post(path=f"/{APP_ID}",payload=payload,headers=headers)
     status, data = resolve_response(response)
 
@@ -82,7 +82,7 @@ def atualizar_lead(chave:str,data:Any,data_response:dict) -> Tuple[int,int]:
         "Accept": "application/json"
     }
 
-    payload = data.model_dump()
+    payload = data
 
     response = http3.put(path=f"/{item_id}",payload=payload,headers=headers)
     status, data = resolve_response(response)

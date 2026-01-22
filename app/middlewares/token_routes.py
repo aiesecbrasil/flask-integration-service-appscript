@@ -1,38 +1,50 @@
 from ..globals import request
-from ..api import getAcessToken,buscarToken
-from ..config import (CLIENT_SECRET_OGX,CLIENT_ID_PSEL,CLIENT_SECRET_PSEL,
-                      CLIENT_ID_OGX,APP_ID_OGX,APP_TOKEN_OGX,APP_TOKEN_PSEL,APP_ID_PSEL)
+from ..clients import getAcessToken
+from ..config import (CLIENT_SECRET_OGX, CLIENT_ID_OGX, APP_ID_OGX, APP_TOKEN_OGX,
+                      CLIENT_SECRET_PSEL, CLIENT_ID_PSEL, APP_ID_PSEL, APP_TOKEN_PSEL)
 from ..cache import cache
 
+# 1. Centralizamos as configurações em um mapa
+CONFIG_MAP = {
+    "new-lead-ogx": {
+        "key": "ogx-token-podio",
+        "credenciais": {
+            "CLIENT_SECRET": CLIENT_SECRET_OGX,
+            "CLIENT_ID": CLIENT_ID_OGX,
+            "APP_ID": APP_ID_OGX,
+            "APP_TOKEN": APP_TOKEN_OGX
+        }
+    },
+    "processo-seletivo": {
+        "key": "psel-token-podio",
+        "credenciais": {
+            "CLIENT_SECRET": CLIENT_SECRET_PSEL,
+            "CLIENT_ID": CLIENT_ID_PSEL,
+            "APP_ID": APP_ID_PSEL,
+            "APP_TOKEN": APP_TOKEN_PSEL
+        }
+    }
+}
+
+
 def verificar_rota():
+    path = request.path  # Ex: /api/v1/new-lead-ogx/metadados
+    parts = path.strip("/").split("/")  # ['api', 'v1', 'new-lead-ogx', 'metadados']
 
-    OGX = {
-        "CLIENT_SECRET":CLIENT_SECRET_OGX,
-        "CLIENT_ID":CLIENT_ID_OGX,
-        "APP_ID":APP_ID_OGX,
-        "APP_TOKEN":APP_TOKEN_OGX
-    }
+    # 2. Ignoramos o prefixo dinamicamente (pula 'api' e 'v1' ou 'v2')
+    # O identificador do serviço geralmente é o 3º elemento (índice 2)
+    if len(parts) >= 3:
+        service_name = parts[2]
 
-    PSEL = {
-        "CLIENT_SECRET":CLIENT_SECRET_PSEL,
-        "CLIENT_ID":CLIENT_ID_PSEL,
-        "APP_ID":APP_ID_PSEL,
-        "APP_TOKEN":APP_TOKEN_PSEL
-    }
+        # 3. Verificamos se esse serviço existe no nosso mapa
+        config = CONFIG_MAP.get(service_name)
 
-    rota = request.path
-    if rota.startswith("/ogx"):
-        cache.get_or_set(
-            key="ogx-token-podio",
-            fetch=lambda: getAcessToken(OGX)
-        )
-        return None
-    if rota.startswith("/psel"):
-        cache.get_or_set(
-            key="psel-token-podio",
-            fetch=lambda: getAcessToken(PSEL)
-        )
-        return None
+        if config:
+            cache.get_or_set(
+                key=config["key"],
+                fetch=lambda: getAcessToken(config["credenciais"])
+            )
+
     return None
 
 __all__ = ["verificar_rota"]

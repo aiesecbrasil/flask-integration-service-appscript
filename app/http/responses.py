@@ -25,7 +25,7 @@ def success(
     data: Any,
     message: Optional[str] = None,
     status: int = 200
-) -> tuple[dict[str, str | int | Any], int]:
+) -> dict[str, str | int | Any]:
     """
     Retorna resposta de sucesso padrão.
 
@@ -42,7 +42,7 @@ def success(
         "message": message or "Operação realizada com sucesso",
         "data": data,
         "status_code": status
-    },status
+    }
 
 
 # ================================

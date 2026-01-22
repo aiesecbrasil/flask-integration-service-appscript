@@ -3,13 +3,12 @@ from app.routes import Router
 from app.cache import cache
 from app.clients import metadados
 from app.config import APP_ID_PSEL
-from app.type import LeadPselInput,ReponsePselPreCadastro
-from ..controller import cadastrar_lead_psel_controller
-psel = Router(name="psel", url_prefix="/psel")
+from app.type import LeadPselInput,ReponseOutPutPreCadastro
+from app.controller import cadastrar_lead_psel_controller
 
+processo_seletivo = Router(name="Processo Seletivo", url_prefix="/processo-seletivo")
 
-
-@psel.get("/metadados")
+@processo_seletivo.get("/metadados")
 def buscar_metadados() -> dict:
     #criar futuramente o tipo Cache
     """
@@ -25,13 +24,13 @@ def buscar_metadados() -> dict:
     )
     return cache.store["metadados_card-psel"]
 
-@psel.post("/inscricoes", responses={"201":ReponsePselPreCadastro})
-def criar_incricao(body: LeadPselInput) -> tuple[dict[str, str], int] | dict[str, str | int | Any]:
+@processo_seletivo.post("/inscricoes", responses={201:ReponseOutPutPreCadastro},)
+def criar_incricao(body: LeadPselInput) -> tuple[dict[str, int], int]:
     """
         Cria um card de lead interessado em participar da AIESEC assim como inicia o seu processo de inscrição.
 
         Args:
-            body: (LeadPselInput): Dados do lead incluindo nome, emails, telefones e comitê.
+            body (LeadPselInput): Dados do lead incluindo nome, emails, telefones e comitê.
 
         Returns:
             dict: Um dicionário com as chaves:
@@ -50,4 +49,4 @@ def criar_incricao(body: LeadPselInput) -> tuple[dict[str, str], int] | dict[str
     """
     return cadastrar_lead_psel_controller(body)
 
-__all__ = ["psel"]
+__all__ = ["processo_seletivo"]

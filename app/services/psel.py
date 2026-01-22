@@ -3,13 +3,15 @@ from ..repository import cadastrar_lead_psel
 from ..schema import lead_schema
 from ..repository import db,LeadPsel
 from ..http import responses
-from ..clients import  enviar_email_psel,adicionar_lead,atualizar_lead,remover_lead
+from ..clients import enviar_email_psel,adicionar_lead,atualizar_lead,remover_lead
 from ..config import APP_ID_PSEL, URL_CONNECT
-from ..type import LeadPselInput,LeadPselPodio,AtualizarPodioStatusFitCultural,ReponsePselPreCadastro
+from ..type import (LeadPselInput,LeadPselPodio,AtualizarPodioStatusFitCultural,ReponsePselPreCadastro,
+                    ReponseOutPutPreCadastro)
 from urllib.parse import urlencode
+from pydantic import ValidationError
 
-def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[dict[str, Any], int] | tuple[
-    dict[str, str | int | Any], int]:
+@validar
+def cadastrar_lead_psel_service(data:LeadPselInput) -> Any:
     data_podio = None  # dados da resposta recebida do podio
     novo_lead = None  # dados que foram inseridos no banco de dados
     try:
@@ -17,7 +19,7 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[dict[str, Any], int
         dados_podio = LeadPselPodio(**data.model_dump()).to_json_podio()
 
         # cria a requisição para o podio
-        data_podio, id_podio = adicionar_lead(chave="psel-token-podio", data=dados_podio, APP_ID=APP_ID_PSEL)
+        data_podio, id_podio = adicionar_lead(chave="psel-token-podio", data=dados_podio.model_dump(), APP_ID=APP_ID_PSEL)
 
         # caso ocorre erro no podio e não criar usuário retorna esse erro
         if not id_podio:
@@ -28,7 +30,7 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[dict[str, Any], int
 
         # Atualizar Status do lead no podio para 203 que é o fit cultural enviado
         status_fit = AtualizarPodioStatusFitCultural(status=203).to_json_podio()
-        atualizar_lead(chave="psel-token-podio", data=status_fit, data_response=data_podio)
+        atualizar_lead(chave="psel-token-podio", data=status_fit.model_dump(), data_response=data_podio)
 
         # Cria paramentro de URL
         params = urlencode({
@@ -54,9 +56,16 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[dict[str, Any], int
         })
 
         # Resposta da rota
-        return responses.success(resposta.model_dump(), "Lead Criado com Sucesso", status=201)
+        data = ReponseOutPutPreCadastro(**{
+            "status": "success",
+            "message": "Operação realizada com sucesso",
+            "data": resposta,
+            "status_code": 201
+        }).model_dump()
 
-    except Exception as e:
+        return data,data.get("status_code")
+
+    except (ValidationError,Exception) as e:
         # caso ocorra ERRO Impede dos dados no banco serem salvos caso estejam em transição
         db.session.rollback()
         print(f"Erro detectado: {str(e)}")

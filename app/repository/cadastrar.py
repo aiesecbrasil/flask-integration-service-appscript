@@ -2,6 +2,7 @@ from .model import LeadPsel,Telefone,Email,db
 from ..type import LeadPselInput
 
 
+@validar
 def cadastrar_lead_psel(data:LeadPselInput,id_podio:int) -> LeadPsel:
     # 1. Criar a instância principal do Lead
     novo_lead = LeadPsel(id_podio=id_podio, nome=data.nome, aiesec_mais_proxima=data.comite.nome)

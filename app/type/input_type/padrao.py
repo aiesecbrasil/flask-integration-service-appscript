@@ -1,6 +1,4 @@
-from datetime import datetime
-from typing import Dict, List, Any
-from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
+from pydantic import BaseModel, EmailStr
 
 # =================================================================
 # 1. SUB-MODELOS DE APOIO

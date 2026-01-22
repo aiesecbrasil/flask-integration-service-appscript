@@ -1,9 +1,10 @@
-from flask_openapi3 import OpenAPI, Info
+from flask_openapi3 import OpenAPI, Info,APIBlueprint
 from flask_cors import CORS
+from spectree import SpecTree
 from .repository import db
 from .schema import ma
 from .manager import migrates, migration
-from .routes import ogx_router,psel_router
+from .routes import v1
 from .middlewares import verificar_origem,verificar_rota
 from .config import AMBIENTE, DOMINIOS_PERMITIDOS,DB_CONNECT
 from .cache import cache   # 🔥 força a inicialização
@@ -13,9 +14,10 @@ from .cache import cache   # 🔥 força a inicialização
 def create_app():
     app = OpenAPI(
         __name__,
-        info=Info(title="API", version="2.0.0")
+        info=Info(title="API", version="1.10.0"),
+        validate_response=True
     )
-
+    spec = SpecTree("flask")
     if AMBIENTE == "PRODUCTION":
         CORS(app, origins=[f"https://{d}" for d in DOMINIOS_PERMITIDOS])
     else:
@@ -30,16 +32,24 @@ def create_app():
         migration()   #Executa a função de migração personalizada.
         db.create_all()  # Cria todas as tabelas definidas nos modelos do banco de dados.
 
+    # criação de documentação:
+    spec.register(app)
     app.before_request(verificar_origem)
     app.before_request(verificar_rota)
 
     # ==============================
     # Registro de rotas
     # ==============================
-    app.register_api(ogx_router.router)
-    app.register_api(psel_router.router)
-    """app.register_blueprint()
-    app.register_blueprint()"""
+    # 1. Cria o Blueprint pai com o prefixo /api
+    api = APIBlueprint("api", __name__, url_prefix="/api")
+    api.register_api(v1)
+    #api_v1.register_api()
+    app.register_api(api)
+
+    with app.app_context():
+        print("\n--- TESTE DE ROTAS ---")
+        for rule in app.url_map.iter_rules():
+            print(f"URL: {rule.rule} | Endpoint: {rule.endpoint}")
 
     return app
 

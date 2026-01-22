@@ -6,7 +6,6 @@ Gerenciamento de cache em memória usando timestamps no horário de Recife.
 """
 
 
-import asyncio
 from ..globals import jsonify,Any, Callable, Dict, Tuple
 from ..config import CACHE_TTL
 from ..utils import agora_timestamp,resolve_response

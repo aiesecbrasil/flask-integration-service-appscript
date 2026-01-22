@@ -1,7 +1,10 @@
-from .psel import *
-from .padrao import *
+from .input_type import *
+from .output_type import *
 
 __all__ = [
-    psel.__all__+
-    padrao.__all__
+    "LeadPselInput",
+    "LeadPselPodio",
+    "AtualizarPodioStatusFitCultural",
+    "ReponseOutPutPreCadastro",
+    "ReponsePselPreCadastro"
 ]
