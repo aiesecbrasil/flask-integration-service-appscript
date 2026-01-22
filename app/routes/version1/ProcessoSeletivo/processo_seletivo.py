@@ -24,7 +24,7 @@ def buscar_metadados() -> dict:
     )
     return cache.store["metadados_card-psel"]
 
-@processo_seletivo.post("/inscricoes", responses={201:ReponseOutPutPreCadastro},)
+@processo_seletivo.post("/inscricoes", responses={201:ReponseOutPutPreCadastro},description="Rota Responsavel pelo pré-cadastro de novos leads")
 def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
     """
         Cria um card de lead interessado em participar da AIESEC assim como inicia o seu processo de inscrição.
@@ -48,5 +48,9 @@ def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
             - O payload de e-mail é enviado para o AppScript com a URL parametrizada do lead.
     """
     return cadastrar_lead_psel_controller(body)
+
+@processo_seletivo.get("/validarToken", description="Rota responsavel por validar token de fit cultural")
+def validar_token():
+    return {}
 
 __all__ = ["processo_seletivo"]
