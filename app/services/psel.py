@@ -1,17 +1,15 @@
-from ..globals import Any
 from ..repository import cadastrar_lead_psel
 from ..schema import lead_schema
 from ..repository import db,LeadPsel
-from ..http import responses
 from ..clients import enviar_email_psel,adicionar_lead,atualizar_lead,remover_lead
 from ..config import APP_ID_PSEL, URL_CONNECT
 from ..type import (LeadPselInput,LeadPselPodio,AtualizarPodioStatusFitCultural,ReponsePselPreCadastro,
-                    ReponseOutPutPreCadastro)
+                    ReponseOutPutPreCadastro,HttpStatus)
 from urllib.parse import urlencode
 from pydantic import ValidationError
 
 @validar
-def cadastrar_lead_psel_service(data:LeadPselInput) -> Any:
+def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCadastro,int]:
     data_podio = None  # dados da resposta recebida do podio
     novo_lead = None  # dados que foram inseridos no banco de dados
     try:
@@ -23,7 +21,14 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> Any:
 
         # caso ocorre erro no podio e não criar usuário retorna esse erro
         if not id_podio:
-            return responses.error(erro="Falha ao criar no Podio", status=502)
+            data = ReponseOutPutPreCadastro(**{
+                "status": "error",
+                "message": "Falha ao processar lead",
+                "data": "id do podio não foi gerado ou encontrado",
+                "status_code": HttpStatus.BAD_GATEWAY
+            }).model_dump()
+            # RETORNO OBRIGATÓRIO EM CASO DE ERRO
+            return data, data.get("status_code")
 
         # Cadastra Lead na Base de dados
         novo_lead = cadastrar_lead_psel(data, id_podio)
@@ -60,12 +65,12 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> Any:
             "status": "success",
             "message": "Operação realizada com sucesso",
             "data": resposta,
-            "status_code": 201
+            "status_code": HttpStatus.CREATED
         }).model_dump()
 
         return data,data.get("status_code")
 
-    except (ValidationError,Exception) as e:
+    except (ValidationError,Exception,TypeError) as e:
         # caso ocorra ERRO Impede dos dados no banco serem salvos caso estejam em transição
         db.session.rollback()
         print(f"Erro detectado: {str(e)}")
@@ -84,8 +89,15 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> Any:
 
         print("RollBack Realizado")
 
+        data = ReponseOutPutPreCadastro(**{
+            "status": "error",
+            "message": "Falha ao processar lead",
+            "data": str(e),
+            "status_code": HttpStatus.INTERNAL_ERROR
+        }).model_dump()
+
         # RETORNO OBRIGATÓRIO EM CASO DE ERRO
-        return responses.error(erro=str(e), details="Falha ao processar lead", status=500)
+        return data,data.get("status_code")
 
     finally:
         # Encerra o banco fechando suas instancias

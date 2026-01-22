@@ -25,7 +25,7 @@ def buscar_metadados() -> dict:
     return cache.store["metadados_card-psel"]
 
 @processo_seletivo.post("/inscricoes", responses={201:ReponseOutPutPreCadastro},)
-def criar_incricao(body: LeadPselInput) -> tuple[dict[str, int], int]:
+def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
     """
         Cria um card de lead interessado em participar da AIESEC assim como inicia o seu processo de inscrição.
 

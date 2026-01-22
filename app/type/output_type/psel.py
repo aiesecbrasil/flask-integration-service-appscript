@@ -1,11 +1,33 @@
-from datetime import datetime
-from typing import Dict, List, Any,Optional
-from pydantic import BaseModel, Field, field_validator, model_validator,ConfigDict
-from app.type.input_type.padrao import Comite,EmailItem,TelefoneItem
+from typing import Dict, Any,Optional
+from enum import IntEnum
+from pydantic import BaseModel, Field, model_validator,ConfigDict
 
 # =================================================================
 # 1. MODELOS DE RESPOSTA GENÉRICOS (BASE)
 # =================================================================
+class HttpStatus(IntEnum):
+    # Success
+    OK = 200
+    CREATED = 201
+    NON_AUTHORITATIVE = 203
+
+    # Redirection
+    MOVED_PERMANENTLY = 301
+    FOUND = 302
+
+    # Client Errors
+    BAD_REQUEST = 400
+    UNAUTHORIZED = 401
+    FORBIDDEN = 403
+    NOT_FOUND = 404
+    CONFLICT = 409
+    UNPROCESSABLE_ENTITY = 422  # Útil para erros de validação Pydantic
+
+    # Server Errors
+    INTERNAL_ERROR = 500
+    BAD_GATEWAY = 502  # O que você usará para falhas no Podio
+    SERVICE_UNAVAILABLE = 503
+    GATEWAY_TIMEOUT = 504
 
 class ModelPodio(BaseModel):
     """
@@ -47,8 +69,8 @@ class ReponsePselPreCadastro(BaseModel):
 class ReponseOutPutPreCadastro(BaseModel):
     status: str
     message: str
-    data: ReponsePselPreCadastro
-    status_code:int
+    data: ReponsePselPreCadastro | str
+    status_code: HttpStatus
 
     def model_dump(self, **kwargs):
         # O segredo: forçamos o modo JSON que converte TUDO (incluindo sub-classes) para dict/list/str
@@ -58,5 +80,6 @@ class ReponseOutPutPreCadastro(BaseModel):
 __all__ = [
     "ModelPodio",
     "ReponseOutPutPreCadastro",
-    "ReponsePselPreCadastro"
+    "ReponsePselPreCadastro",
+    "HttpStatus"
 ]

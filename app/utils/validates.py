@@ -182,28 +182,42 @@ def validar_email_pessoal_obrigatorio(email: str) -> bool:
     dominio: str = email.split('@')[1].lower()
     return dominio in dominios_permitidos
 
-def validar_data_nascimento(data: str) -> bool:
+def validar_data_nascimento(data: datetime | str) -> bool:
     """
     Valida se a data de nascimento está no formato 'YYYY-MM-DD HH:MM:SS'.
 
     Args:
-        data (str): Data a ser validada.
+        data (datetime | str): Data a ser validada.
 
     Returns:
         bool: True se válido, False se inválido.
     """
-    try:
-        datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
+    # Se o Pydantic já converteu para datetime, está validado!
+    if isinstance(data, datetime):
         return True
-    except ValueError:
-        return False
+
+    # Se por algum motivo chegar como string, tentamos converter
+    if isinstance(data, str):
+        try:
+            # Tenta o formato com espaço
+            datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
+            return True
+        except ValueError:
+            try:
+                # Tenta o formato ISO (comum em APIs)
+                datetime.fromisoformat(data.replace('Z', '+00:00'))
+                return True
+            except ValueError:
+                return False
+
+    return False
 
 def validar_tipo_email(tipo_email: str) -> bool:
     """
     Verifica se todos os tipos de email da lista estão permitidos.
 
     Args:
-        emails (List[Dict[str, str]]): Lista de emails no formato {"tipo": ..., "email": ...}
+        tipo do emails (str): Lista de emails no formato {"tipo": ..., "email": ...}
 
     Returns:
         bool: True se todos forem válidos, False caso algum tipo seja inválido.
@@ -218,7 +232,7 @@ def validar_tipo_telefone(tipo_telefone: str) -> bool:
     Verifica se todos os tipos de email da lista estão permitidos.
 
     Args:
-        emails (List[Dict[str, str]]): Lista de emails no formato {"tipo": ..., "email": ...}
+        tipo do telefone (str): Lista de emails no formato {"tipo": ..., "email": ...}
 
     Returns:
         bool: True se todos forem válidos, False caso algum tipo seja inválido.
@@ -228,9 +242,17 @@ def validar_tipo_telefone(tipo_telefone: str) -> bool:
         return False
     return True
 
-def tem_mais_de_31_anos(data_nascimento_str):
+def tem_mais_de_31_anos(data_nascimento:datetime|str) -> bool:
     # Converte string para data (formato: YYYY-MM-DD %H:%M:%S)
-    nascimento = datetime.strptime(data_nascimento_str, "%Y-%m-%d %H:%M:%S").date()
+    # 1. Garante que temos um objeto date, não importa o que venha
+    if isinstance(data_nascimento, datetime):
+        nascimento = data_nascimento.date()
+    elif isinstance(data_nascimento, str):
+        # Caso venha string, converte (ajuste o formato se necessário)
+        nascimento = datetime.strptime(data_nascimento, "%Y-%m-%d %H:%M:%S").date()
+    else:
+        nascimento = data_nascimento # Assume que já é date
+
     hoje = date.today()
 
     idade = hoje.year - nascimento.year
@@ -239,7 +261,7 @@ def tem_mais_de_31_anos(data_nascimento_str):
     if (hoje.month, hoje.day) < (nascimento.month, nascimento.day):
         idade -= 1
 
-    return idade > 31
+    return not (idade > 31)
 
 __all__ = [
     "validar_telefone",
