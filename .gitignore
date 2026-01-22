@@ -194,6 +194,9 @@ cython_debug/
 # arquvo de IA
 .qodo/
 
+# arquivo de migração
+migrations/
+
 # PyPI config file
 .pypirc
 
