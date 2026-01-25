@@ -1,14 +1,12 @@
 from flask_openapi3 import OpenAPI, Info,APIBlueprint
 from flask_cors import CORS
 from spectree import SpecTree
-from .repository import db
+from .core import db
 from .schema import ma
 from .manager import migrates, migration
-from .routes import v1
+from .api import api
 from .middlewares import verificar_origem,verificar_rota
 from .config import AMBIENTE, DOMINIOS_PERMITIDOS,DB_CONNECT
-from .cache import cache   # 🔥 força a inicialização
-
 
 
 def create_app():
@@ -30,7 +28,6 @@ def create_app():
 
     with app.app_context():  # Cria um contexto de aplicação para criar as tabelas no banco de dados.
         migration()   #Executa a função de migração personalizada.
-        db.create_all()  # Cria todas as tabelas definidas nos modelos do banco de dados.
 
     # criação de documentação:
     spec.register(app)
@@ -41,9 +38,6 @@ def create_app():
     # Registro de rotas
     # ==============================
     # 1. Cria o Blueprint pai com o prefixo /api
-    api = APIBlueprint("api", __name__, url_prefix="/api")
-    api.register_api(v1)
-    #api_v1.register_api()
     app.register_api(api)
 
     with app.app_context():

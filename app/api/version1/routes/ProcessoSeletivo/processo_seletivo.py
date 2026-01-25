@@ -1,12 +1,11 @@
-from typing import Any
-from app.routes import Router
+from app.api.version1.routes import Router
 from app.cache import cache
 from app.clients import metadados
 from app.config import APP_ID_PSEL
-from app.type import LeadPselInput,ReponseOutPutPreCadastro
-from app.controller import cadastrar_lead_psel_controller
+from app.dto import LeadPselInput,ReponseOutPutPreCadastro
+from app.api.version1.controller import cadastrar_lead_psel_controller
 
-processo_seletivo = Router(name="Processo Seletivo", url_prefix="/processo-seletivo")
+processo_seletivo = Router(name="processo_seletivo", url_prefix="/processo-seletivo")
 
 @processo_seletivo.get("/metadados")
 def buscar_metadados() -> dict:

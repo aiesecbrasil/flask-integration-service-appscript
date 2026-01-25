@@ -1,7 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
 from app.utils import agora,expiracao_3dias,gerar_token
+from app.core import db
 
-db = SQLAlchemy()
 
 class LeadPsel(db.Model):
     __tablename__ = "lead_psel"

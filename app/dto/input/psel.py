@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Dict, List, Any,Optional
 from pydantic import BaseModel, Field, field_validator, model_validator,ConfigDict
 from .padrao import Comite,EmailItem,TelefoneItem
-from ..output_type import ModelPodio
+from ..output import ModelPodio
 
 # =================================================================
 # 1. MODELOS DE ENTRADA (API -> FLASK)
@@ -45,8 +45,8 @@ class LeadPselPodio(LeadPselInput):
         return {
             "titulo": self.nome,
             "data-de-nascimento": self.data_nascimento.strftime("%Y-%m-%d %H:%M:%S"),
-            "email": [{"type": email.tipo, "value": email.email} for email in self.emails],
-            "telefone": [{"type": telefone.tipo, "value": telefone.numero} for telefone in self.telefones],
+            "email": [{"dto": email.tipo, "value": email.email} for email in self.emails],
+            "telefone": [{"dto": telefone.tipo, "value": telefone.numero} for telefone in self.telefones],
             "autorizo-receber-informacoes-sobre-os-projetos-de-inter": self.id_autorizacao,
             "aiesec-mais-proxima-digite-primeira-letra-para-filtrar": self.comite.id,
             "tem-fit-cultural": 3

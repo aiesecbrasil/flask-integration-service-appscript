@@ -1,10 +1,11 @@
-from ..repository import cadastrar_lead_psel
-from ..schema import lead_schema
-from ..repository import db,LeadPsel
-from ..clients import enviar_email_psel,adicionar_lead,atualizar_lead,remover_lead
-from ..config import APP_ID_PSEL, URL_CONNECT
-from ..type import (LeadPselInput,LeadPselPodio,AtualizarPodioStatusFitCultural,ReponsePselPreCadastro,
-                    ReponseOutPutPreCadastro,HttpStatus)
+from app.repository import cadastrar_lead_psel,buscar_token_lead_psel
+from app.schema import lead_schema
+from app.repository import db,LeadPsel
+from app.clients import enviar_email_psel,adicionar_lead,atualizar_lead,remover_lead
+from app.config import APP_ID_PSEL, URL_CONNECT
+from app.dto import (LeadPselInput, LeadPselPodio, AtualizarPodioStatusFitCultural, ReponsePselPreCadastro,
+                     ReponseOutPutPreCadastro, HttpStatus)
+from app.globals import Any
 from urllib.parse import urlencode
 from pydantic import ValidationError
 
@@ -105,5 +106,12 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCad
 
         # Limpa a resposta da requisição da memória
         if 'resposta' in locals(): del resposta
+
+@validar
+def validar_token_service(token:str) -> Any:
+    lead = buscar_token_lead_psel(token)
+
+    return lead
+
 
 __all__ = ["cadastrar_lead_psel_service"]

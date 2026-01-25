@@ -1,5 +1,5 @@
 from flask_openapi3 import APIBlueprint
-from ..globals import Callable
+from app.globals import Callable
 
 class Router(APIBlueprint):
     def __init__(self, name: str | None = None, url_prefix: str = ""):

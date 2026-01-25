@@ -1,11 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any
-
-from app.type import ReponseOutPutPreCadastro
-from ..globals import Any
-from ..type import LeadPselInput,ReponseOutPutPreCadastro,HttpStatus
-from ..services import cadastrar_lead_psel_service
-from ..utils import validar_nome_com_acentos, validar_telefone, validar_tipo_telefone, \
+from app.globals import Any,Dict
+from app.dto import LeadPselInput,ReponseOutPutPreCadastro,HttpStatus
+from app.api.version1.services import cadastrar_lead_psel_service
+from app.utils import validar_nome_com_acentos, validar_telefone, validar_tipo_telefone, \
     tem_mais_de_31_anos, validar_data_nascimento
 
 
@@ -45,6 +42,9 @@ def cadastrar_lead_psel_controller(data:LeadPselInput) -> tuple[ReponseOutPutPre
     # FIM DE VALIDADORES
     return cadastrar_lead_psel_service(data)
 
+@validar
+def validar_token_controller(data:Dict[str,Any]):
+    return {}
 
 __all__ = [
     "cadastrar_lead_psel_controller"

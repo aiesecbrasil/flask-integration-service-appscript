@@ -1,11 +1,9 @@
-from app.routes import Router
+from app.api.version1.routes import Router
 from app.cache import cache
-from app.config import APP_ID_OGX, APPSCRIPT_ADICIONAR_CARD
-from app.globals import request
-from app.http import responses
+from app.config import APP_ID_OGX
 from app.clients import metadados
 
-new_lead_ogx = Router(name="Novos Leads OGX", url_prefix="/new-lead-ogx")
+new_lead_ogx = Router(name="novos_leads_ogx", url_prefix="/new-lead-ogx")
 
 
 @new_lead_ogx.get("/metadados")

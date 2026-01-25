@@ -1,5 +1,5 @@
-from .input_type import *
-from .output_type import *
+from .input import *
+from .output import *
 
 __all__ = [
     "LeadPselInput",

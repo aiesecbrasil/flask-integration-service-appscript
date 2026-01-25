@@ -1,5 +1,5 @@
 from .model import LeadPsel,Telefone,Email,db
-from ..type import LeadPselInput
+from ..dto import LeadPselInput
 
 
 @validar
