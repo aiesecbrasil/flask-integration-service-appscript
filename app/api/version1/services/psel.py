@@ -2,7 +2,8 @@ from app.repository import cadastrar_lead_psel,buscar_token_lead_psel
 from app.schema import lead_schema
 from app.repository import db,LeadPsel
 from app.clients import enviar_email_psel,adicionar_lead,atualizar_lead,remover_lead
-from app.config import APP_ID_PSEL, URL_CONNECT
+from app.config import APP_ID_PSEL
+from app.core import URL_CONNECT
 from app.dto import (LeadPselInput, LeadPselPodio, AtualizarPodioStatusFitCultural, ReponsePselPreCadastro,
                      ReponseOutPutPreCadastro, HttpStatus)
 from app.globals import Any

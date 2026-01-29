@@ -1,4 +1,4 @@
-from .http_request import HttpClient
+from app.clients.http_request import HttpClient
 from app.globals import Any,Dict,Tuple
 from app.utils import agora
 from app.cache import cache

@@ -45,8 +45,8 @@ class LeadPselPodio(LeadPselInput):
         return {
             "titulo": self.nome,
             "data-de-nascimento": self.data_nascimento.strftime("%Y-%m-%d %H:%M:%S"),
-            "email": [{"dto": email.tipo, "value": email.email} for email in self.emails],
-            "telefone": [{"dto": telefone.tipo, "value": telefone.numero} for telefone in self.telefones],
+            "email": [{"type": email.tipo, "value": email.email} for email in self.emails],
+            "telefone": [{"type": telefone.tipo, "value": telefone.numero} for telefone in self.telefones],
             "autorizo-receber-informacoes-sobre-os-projetos-de-inter": self.id_autorizacao,
             "aiesec-mais-proxima-digite-primeira-letra-para-filtrar": self.comite.id,
             "tem-fit-cultural": 3

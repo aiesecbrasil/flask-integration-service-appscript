@@ -54,10 +54,11 @@ class ModelPodio(BaseModel):
 
 class ReponsePselPreCadastro(BaseModel):
     """
-        Estrutura:
-        {
+        Estrutura: {
             "banco_de_dados": { ... },
-            "podio": { "fields": { ... } }
+            "podio": {
+                "fields": { ... }
+            }
         }
         """
     banco_de_dados: Optional[Dict[str, Any]] = Field(default_factory=dict)

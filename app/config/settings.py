@@ -47,12 +47,6 @@ def get_env_or_fail(var_name: str) -> str:
 
 AMBIENTE: str = get_env_or_fail("AMBIENTE").upper()
 
-IS_PRODUCTION: bool = AMBIENTE == "PRODUCTION"
-IS_NON_PROD: bool = AMBIENTE in {"DEVELOPMENT", "DEV", "TEST", "TESTING"}
-
-if not (IS_PRODUCTION or IS_NON_PROD):
-    raise ValueError(f"Ambiente inválido: {AMBIENTE}")
-
 
 # ================================
 # DOMÍNIOS
@@ -60,9 +54,6 @@ if not (IS_PRODUCTION or IS_NON_PROD):
 DOMINIOS_PRODUCAO: List[str] = get_env_or_fail("DOMINIOS_PRODUCAO").split(",")
 
 DOMINIOS_TESTE: List[str] = get_env_or_fail("DOMINIOS_TESTE").split(",")
-
-# Seleção de domínios por ambiente
-DOMINIOS_PERMITIDOS: List[str] = DOMINIOS_PRODUCAO if IS_PRODUCTION else DOMINIOS_TESTE
 
 
 
@@ -78,14 +69,14 @@ API_KEYS_PERMITIDAS: List[str] = [
 # ===============================
 DB_PRODUCAO=get_env_or_fail("DB_PRODUCAO")
 DB_TESTE=get_env_or_fail("DB_TESTE")
-DB_CONNECT=DB_PRODUCAO if IS_PRODUCTION else DB_TESTE
+
 
 # ===============================
 # URL
 # ===============================
 URL_PRODUCAO=get_env_or_fail("URL_PRODUCAO")
 URL_TESTE=get_env_or_fail("URL_TESTE")
-URL_CONNECT=URL_PRODUCAO if IS_PRODUCTION else URL_TESTE
+
 
 
 # ================================
@@ -132,19 +123,18 @@ TOKEN_EXPA=get_env_or_fail("TOKEN_EXPA")
 __all__ = [
     # env
     "AMBIENTE",
-    "IS_PRODUCTION",
-    "IS_NON_PROD",
 
     # domains
     "DOMINIOS_PRODUCAO",
     "DOMINIOS_TESTE",
-    "DOMINIOS_PERMITIDOS",
 
     #banco de dados
-    "DB_CONNECT",
+    "DB_PRODUCAO",
+    "DB_TESTE",
 
     #URL
-    "URL_CONNECT",
+    "URL_PRODUCAO",
+    "URL_TESTE",
 
     # security
     "API_KEYS_PERMITIDAS",

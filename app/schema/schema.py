@@ -1,9 +1,7 @@
-from flask_marshmallow import Marshmallow
+from ..core import ma
 from ..repository.model import LeadPsel, Email, Telefone
 # Importe diretamente da biblioteca base para garantir
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-
-ma = Marshmallow() # Inicialize após o db
 
 class EmailSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

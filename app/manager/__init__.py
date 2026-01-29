@@ -1,8 +1,7 @@
-from .maneger import migration,migrates,upgrade
+from .maneger import migration,upgrade
 
 
 __all__ = [
-    "migrates",
     "migration",
     "upgrade"
 ]

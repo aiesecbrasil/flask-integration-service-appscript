@@ -1,4 +1,4 @@
-from .http_request import HttpClient
+from app.clients.http_request import HttpClient
 from app.config import ID_APPSCRIPT_EMAIL_LEADS_PSEL
 from app.utils import resolve_response
 
