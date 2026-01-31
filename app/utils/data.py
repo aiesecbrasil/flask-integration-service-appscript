@@ -1,6 +1,9 @@
 import pytz
+import locale
 from datetime import timedelta
 from ..globals import datetime
+
+locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
 
 def agora_timestamp(cidade_fuso="America/Sao_Paulo"):
     fuso = pytz.timezone(str(cidade_fuso))
@@ -19,6 +22,9 @@ def expiracao_3dias(cidade_fuso="America/Sao_Paulo"):
 
 def agora_format_brasil(cidade_fuso="America/Sao_Paulo"):
     return agora(cidade_fuso).strftime("%d/%m/%Y %H:%M:%S")
+
+def agora_format_brasil_mes(cidade_fuso="America/Sao_Paulo"):
+    return agora(cidade_fuso).strftime(f"%d/%b/%Y %H:%M:%S").title()
 
 
 def logging_time_brasil(*args):
@@ -42,5 +48,6 @@ __all__ = [
     "agora",
     "expiracao_3dias",
     "agora_format_brasil",
-    "logging_time_brasil"
+    "logging_time_brasil",
+    "agora_format_brasil_mes"
 ]

@@ -1,5 +1,4 @@
 import logging
-import sys
 from flask_openapi3 import OpenAPI, Info
 from flask_cors import CORS
 from spectree import SpecTree
@@ -7,7 +6,7 @@ from .core import db, migrate
 from .schema import ma
 from .manager import migration
 from .api import api
-from .middlewares import verificar_origem, verificar_rota
+from .middlewares import verificar_origem, verificar_rota,register_url
 from .core import DOMINIOS_PERMITIDOS, DB_CONNECT
 
 
@@ -55,7 +54,7 @@ def create_app():
 
         logger.info("Servidor Inicializado com Sucesso!")
         # Mapeamento de URL
-
+        app.after_request(register_url)
         """with app.app_context():
             print("\n--- TESTE DE ROTAS ---")
             for rule in app.url_map.iter_rules():
