@@ -5,13 +5,17 @@ from dotenv import load_dotenv
 path_atual = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(path_atual, ".env"))
 
+from app.core import setup_logging,IS_NON_PROD
+
+setup_logging()
+
 from app import create_app
 from waitress import serve
 
 app = create_app()
 
 if __name__ == "__main__":
-    if os.getenv("AMBIENTE") in {"DEVELOPMENT", "DEV", "TEST", "TESTING"}:
+    if IS_NON_PROD:
         app.run(debug=True)
     else:
         serve(app, host="0.0.0.0", port=5000)

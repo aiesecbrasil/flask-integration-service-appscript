@@ -1,5 +1,5 @@
 from .googlescript import *
 
-__all__ = [
+__all__ = (
     googlescript.__all__
-]
+)

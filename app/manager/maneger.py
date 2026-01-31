@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from flask_migrate import init, migrate, upgrade, downgrade, current, show,stamp
 
 def migration() -> None:
@@ -17,52 +18,53 @@ def migration() -> None:
     raiz_projeto = os.path.abspath(os.path.join(diretorio_atual, "..", ".."))
     # 4. Pasta migrations
     migrations_dir = os.path.join(raiz_projeto, 'migrations')
-
+    # 5. Criando Log
+    logger = logging.getLogger(__name__)
     # ---------- 1. Inicializa migrations automaticamente se não existir ----------
     if not os.path.exists(migrations_dir):
-        print(f"[INFO] Diretório migrations não existe, criando em: {migrations_dir}")
+        logger.info(f"Diretório migrations não existe, criando em: {migrations_dir}")
         try:
             init(directory=migrations_dir)
-            print("[INFO] Diretório migrations criado!")
-            print("[INFO] Gerando primeira migration (auto)...")
+            logger.info("Diretório migrations criado!")
+            logger.info("Gerando primeira migration (auto)...")
             migrate(directory=migrations_dir)
-            print("[INFO] Aplicando upgrade inicial...")
+            logger.info("Aplicando upgrade inicial...")
             upgrade(directory=migrations_dir)
-            print("[OK] Migration inicial e upgrade aplicados!")
+            logger.info("Migration inicial e upgrade aplicados!")
         except Exception as e:
-            print(f"[ERRO] Falha ao inicializar migrations: {e}")
+            logger.error(f"Falha ao inicializar migrations: {e}")
             return
 
     # ---------- 2. Detecta comando do terminal ----------
     if "migrate" in args:
-        print("[LOG] Usuário executou MIGRATE")
+        logger.log("Usuário executou MIGRATE")
         try:
             migrate(directory=migrations_dir)
-            print("[OK] MIGRATE concluído!")
+            logger.info("MIGRATE concluído!")
         except Exception as e:
-            print(f"[ERRO] Falha no migrate: {e}")
+            logger.error(f"Falha no migrate: {e}")
 
     elif "upgrade" in args:
-        print("[LOG] Usuário executou UPGRADE")
+        logger.log("Usuário executou UPGRADE")
         try:
             upgrade(directory=migrations_dir)
-            print("[OK] UPGRADE concluído!")
+            logger.info("UPGRADE concluído!")
         except Exception as e:
-            print(f"[ERRO] Falha no upgrade: {e}")
+            logger.error(f"Falha no upgrade: {e}")
 
     elif "downgrade" in args:
-        print("[LOG] Usuário executou DOWNGRADE")
+        logger.log("Usuário executou DOWNGRADE")
         try:
             downgrade(directory=migrations_dir,sql=True)
-            print("[OK] DOWNGRADE concluído!")
+            logger.info("DOWNGRADE concluído!")
         except Exception as e:
-            print(f"[ERRO] Falha no downgrade: {e}")
+            logger.error(f"Falha no downgrade: {e}")
+
 
     # ---------- 3. Debug ----------
-    try:
-        print(f"[DEBUG] Versão atual do banco: {current(directory=migrations_dir)}")
-        print("[DEBUG] Migrations disponíveis:")
-        show(directory=migrations_dir)
+    """try:
+        logger.debug(f"Versão atual do banco: {current(directory=migrations_dir)}")
+        logger.debug("Migrations disponíveis:")
+        logger.info(show(directory=migrations_dir))
     except Exception as e:
-        print(f"[ERRO] Debug migrations: {e}")
-
+        logger.error(f"Debug migrations: {e}")"""

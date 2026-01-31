@@ -1,3 +1,5 @@
 from .podio import *
 
-__all__ = [podio.__all__]
+__all__ = (
+    podio.__all__
+)
