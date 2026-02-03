@@ -37,7 +37,7 @@ def migration() -> None:
 
     # ---------- 2. Detecta comando do terminal ----------
     if "migrate" in args:
-        logger.log("Usuário executou MIGRATE")
+        logger.info("Usuário executou MIGRATE")
         try:
             migrate(directory=migrations_dir)
             logger.info("MIGRATE concluído!")
@@ -45,7 +45,7 @@ def migration() -> None:
             logger.error(f"Falha no migrate: {e}")
 
     elif "upgrade" in args:
-        logger.log("Usuário executou UPGRADE")
+        logger.info("Usuário executou UPGRADE")
         try:
             upgrade(directory=migrations_dir)
             logger.info("UPGRADE concluído!")
@@ -53,7 +53,7 @@ def migration() -> None:
             logger.error(f"Falha no upgrade: {e}")
 
     elif "downgrade" in args:
-        logger.log("Usuário executou DOWNGRADE")
+        logger.info("Usuário executou DOWNGRADE")
         try:
             downgrade(directory=migrations_dir,sql=True)
             logger.info("DOWNGRADE concluído!")

@@ -5,8 +5,12 @@ from logging.handlers import TimedRotatingFileHandler
 from ..utils import logging_time_brasil
 
 
-LOG_DIR = "logs"
-
+# 1. Caminho atual
+diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+# 2. Raiz do projeto
+raiz_projeto = os.path.abspath(os.path.join(diretorio_atual, "..", ".."))
+# 3. Pasta migrations
+LOG_DIR = os.path.join(raiz_projeto, "logs")
 
 class RequestContextFilter(logging.Filter):
     def filter(self, record):

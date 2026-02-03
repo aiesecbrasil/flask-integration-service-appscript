@@ -1,4 +1,4 @@
-from .maneger import migration,upgrade
+from .manager import migration,upgrade
 
 
 __all__ = [

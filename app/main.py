@@ -2,8 +2,7 @@ import logging
 from flask_openapi3 import OpenAPI, Info
 from flask_cors import CORS
 from spectree import SpecTree
-from .core import db, migrate
-from .schema import ma
+from .core import db, migrate,ma
 from .manager import migration
 from .api import api
 from .middlewares import verificar_origem, verificar_rota,register_url
@@ -21,29 +20,29 @@ def create_app():
         )
 
         # Criação de documentação
-        logger.info("Carregando URL de Documentação...")
+        logger.info("Carregando URLs de Documentação...")
         spec = SpecTree("flask")
         spec.register(app)
-        logger.info("Carregamento de Url Documentação Completo!")
+        logger.info("Carregamento URLs de Documentação Completo!")
 
         # Configurando CORS
         logger.info("Permitindo Acesso de Domínios Autorizados...")
         CORS(app, origins=DOMINIOS_PERMITIDOS)
-        logger.info("Acesso de Domínios Autorizados com Sucesso!")
+        logger.info("Domínios Autorizados Cadastrados com Sucesso!")
 
         # Conectando Banco de dados
-        app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONNECT
         logger.info(f"Tentando conectar ao banco: {DB_CONNECT.split('@')[-1]}")
+        app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONNECT
         db.init_app(app)
         ma.init_app(app)
         migrate.init_app(app, db)
-        logger.info("Banco Conectado.")
+        logger.info("Banco Conectado com Sucesso!")
 
         # Execução de Migrações
         with app.app_context():
             logger.info("Entrou no contexto da aplicação. Iniciando migrações...")
             migration()
-            logger.info("Migração finalizada.")
+            logger.info("Migração finalizada com Sucesso!")
 
         # Verificar requisitos antes da requisição
         app.before_request(verificar_origem)
@@ -53,12 +52,16 @@ def create_app():
         app.register_api(api)
 
         logger.info("Servidor Inicializado com Sucesso!")
-        # Mapeamento de URL
+
+        # Registrando endpoint
         app.after_request(register_url)
+
+        # Mapeamento de URL
         """with app.app_context():
             print("\n--- TESTE DE ROTAS ---")
             for rule in app.url_map.iter_rules():
                 print(f"URL: {rule.rule} | Endpoint: {rule.endpoint}")"""
+
         return app
 
     except Exception as e:

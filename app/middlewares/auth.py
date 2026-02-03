@@ -12,7 +12,7 @@ from ..globals import request, jsonify, List, Optional
 # ==============================
 # Configurações
 # ==============================
-ROTAS_SEM_VALIDACAO: List[str] = ["/favicon.ico","/validarToken"]
+ROTAS_SEM_VALIDACAO: List[str] = ["/validarToken"]
 logger = logging.getLogger(__name__)
 # ==============================
 # Middleware global
@@ -25,7 +25,7 @@ def verificar_origem():
     logger.info("Autenticando origem...")
     # Rotas que não precisam de validação
     if request.path in ROTAS_SEM_VALIDACAO:
-        logger.info(f"Url Não precisou ser validada: {request.path}")
+        logger.info(f"Rota não precisou ser validada: {request.path}")
         return None
 
     # ==========================

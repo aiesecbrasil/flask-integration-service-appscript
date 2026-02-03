@@ -1,7 +1,8 @@
 import logging
-from flask import  request,Response
+from ..globals import request,Response
 from ..utils import agora_format_brasil_mes
 
+@validar
 def register_url(response:Response):
     protocol = request.environ.get("SERVER_PROTOCOL")
     ip = request.remote_addr

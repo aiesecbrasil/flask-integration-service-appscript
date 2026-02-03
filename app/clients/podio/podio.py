@@ -26,7 +26,7 @@ def getAcessToken(item: Dict[str,Any], PATH: str = "/oauth/token") -> tuple[int,
         # 🛑 Se o Podio retornar erro, levantamos uma exceção para parar tudo
         if status != 200:
             error_msg = data.get("error_description", "Erro desconhecido no Podio")
-            raise ValueError(f"Parada Crítica: Falha na Autenticação ({status}) - {error_msg}, por favor recarregue a página")
+            raise ValueError(f"Parada Crítica: Falha na Autenticação ({status}) - {error_msg}, por favor recarregue a página",400)
 
         # ✨ Se chegou aqui, deu certo. Montamos o retorno esperado pelo Cache
         return status, {
