@@ -65,6 +65,12 @@ def verificar_rota():
         logger.error(f"Rota inexistente acessada: {path}")
         raise NotFound
 
+    except ValueError as ve:
+        mensagem = f"Erro nos valores na rota: {path}: {str(ve)}"
+        # Captura outros erros (ex: ValueError se o tiver erro no valor passado)
+        logger.error(mensagem)
+        raise ValueError(mensagem)
+
     except Exception as e:
         # Captura outros erros (ex: MethodNotAllowed se o método HTTP estiver errado)
         logger.error(f"Erro na validação da rota {path}: {str(e)}")
