@@ -1,3 +1,4 @@
+import logging
 from app.repository import cadastrar_lead_psel,buscar_token_lead_psel
 from app.schema import lead_schema
 from app.repository import db,LeadPsel
@@ -14,6 +15,8 @@ from pydantic import ValidationError
 def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCadastro,int]:
     data_podio = None  # dados da resposta recebida do podio
     novo_lead = None  # dados que foram inseridos no banco de dados
+    id_podio = None
+    logger = logging.getLogger(__name__)
     try:
         # monta padrão de envio de dados do podio
         dados_podio = LeadPselPodio(**data.model_dump()).to_json_podio()
@@ -36,7 +39,7 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCad
         novo_lead = cadastrar_lead_psel(data, id_podio)
 
         # Atualizar Status do lead no podio para 203 que é o fit cultural enviado
-        status_fit = AtualizarPodioStatusFitCultural(status=203).to_json_podio()
+        status_fit = AtualizarPodioStatusFitCultural(status="203a").to_json_podio()
         atualizar_lead(chave="psel-token-podio", data=status_fit.model_dump(), data_response=data_podio)
 
         # Cria paramentro de URL
@@ -75,21 +78,22 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCad
     except (ValidationError,Exception,TypeError) as e:
         # caso ocorra ERRO Impede dos dados no banco serem salvos caso estejam em transição
         db.session.rollback()
-        print(f"Erro detectado: {str(e)}")
+        logger.exception(f"Falha no processamento do Lead: {str(e)}")
 
         # caso já tenha sido salvo quando ocorrer um erro ele o lead é apagado da base de dados
         if novo_lead and novo_lead.id:
             lead = db.session.get(LeadPsel, novo_lead.id)
             if lead:
-                print(f"Id removido {lead.id_podio}")
                 db.session.delete(novo_lead)
                 db.session.commit()
+                logger.warning(f"Lead {lead.id_podio} removido do banco de dados")
 
         # Em caso de ERRO e o card no podio tiver sido criado ele é excluído para não ocorrer dados órfãos
         if data_podio:
             remover_lead("psel-token-podio", data_podio)
+            logger.warning(f"Lead {id_podio} removido do podio")
 
-        print("RollBack Realizado")
+        logger.info("RollBack Realizado")
 
         data = ReponseOutPutPreCadastro(**{
             "status": "error",
