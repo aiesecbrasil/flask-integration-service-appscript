@@ -177,7 +177,7 @@ def validar_data_nascimento(data: datetime | str) -> bool:
                 nascimento = datetime.fromisoformat(data.replace('Z', '+00:00'))
             except ValueError:
                 return False
-    print(nascimento)
+    
     # Se não conseguimos identificar a data ou ela for futura
     if not nascimento or nascimento.date() > date.today():
         return False
