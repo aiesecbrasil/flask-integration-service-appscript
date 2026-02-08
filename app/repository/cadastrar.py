@@ -3,7 +3,7 @@ from ..dto import LeadPselInput
 
 
 @validar
-def cadastrar_lead_psel(data:LeadPselInput,id_podio:int) -> LeadPsel:
+def cadastrar_lead_psel(data:LeadPselInput,id_podio:int,commit:bool=True) -> LeadPsel:
     # 1. Criar a instância principal do Lead
     novo_lead = LeadPsel(id_podio=id_podio, nome=data.nome, aiesec_mais_proxima=data.comite.nome)
 
@@ -16,7 +16,9 @@ def cadastrar_lead_psel(data:LeadPselInput,id_podio:int) -> LeadPsel:
 
     # 4. Persistir no Banco
     db.session.add(novo_lead)
-    db.session.commit()
+
+    if commit:
+        db.session.commit()
 
     return novo_lead
 

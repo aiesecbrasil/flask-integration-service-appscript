@@ -14,15 +14,17 @@ from pydantic import ValidationError
 @validar
 def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCadastro,int]:
     data_podio = None  # dados da resposta recebida do podio
-    novo_lead = None  # dados que foram inseridos no banco de dados
-    id_podio = None
-    logger = logging.getLogger(__name__)
+    id_podio = None # id ainda não recuperado do podio
+    logger = logging.getLogger(__name__) # instancia do log
     try:
         # monta padrão de envio de dados do podio
         dados_podio = LeadPselPodio(**data.model_dump()).to_json_podio()
 
+        #guardando dados de envio em variável
+        dados_dump = dados_podio.model_dump()
+
         # cria a requisição para o podio
-        data_podio, id_podio = adicionar_lead(chave="psel-token-podio", data=dados_podio.model_dump(), APP_ID=APP_ID_PSEL)
+        data_podio, id_podio = adicionar_lead(chave="psel-token-podio", data=dados_dump, APP_ID=APP_ID_PSEL)
 
         # caso ocorre erro no podio e não criar usuário retorna esse erro
         if not id_podio:
@@ -35,12 +37,13 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCad
             # RETORNO OBRIGATÓRIO EM CASO DE ERRO
             return data, data.get("status_code")
 
-        # Cadastra Lead na Base de dados
-        novo_lead = cadastrar_lead_psel(data, id_podio)
+        # Cadastra Lead na Base de dados, mas sem commitar
+        novo_lead = cadastrar_lead_psel(data, id_podio,commit=False)
 
         # Atualizar Status do lead no podio para 203 que é o fit cultural enviado
-        status_fit = AtualizarPodioStatusFitCultural(status="203a").to_json_podio()
-        atualizar_lead(chave="psel-token-podio", data=status_fit.model_dump(), data_response=data_podio)
+        status_fit = AtualizarPodioStatusFitCultural(status=203).to_json_podio()
+        status_dump = status_fit.model_dump()
+        atualizar_lead(chave="psel-token-podio", data=status_dump, data_response=data_podio)
 
         # Cria paramentro de URL
         params = urlencode({
@@ -59,6 +62,8 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCad
         # Dispara E-mail via APP SCRIPT enviando o payload como url parametrizada para validar o token e responder o fit
         enviar_email_psel(payload=payload)
 
+        # criando o commit depois de ter sucesso
+        db.session.commit()
         # Montagem exata para a classe
         resposta = ReponsePselPreCadastro(**{
             "banco_de_dados": lead_schema.dump(novo_lead),
@@ -78,15 +83,9 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCad
     except (ValidationError,Exception,TypeError) as e:
         # caso ocorra ERRO Impede dos dados no banco serem salvos caso estejam em transição
         db.session.rollback()
-        logger.exception(f"Falha no processamento do Lead: {str(e)}")
 
-        # caso já tenha sido salvo quando ocorrer um erro ele o lead é apagado da base de dados
-        if novo_lead and novo_lead.id:
-            lead = db.session.get(LeadPsel, novo_lead.id)
-            if lead:
-                db.session.delete(novo_lead)
-                db.session.commit()
-                logger.warning(f"Lead {lead.id_podio} removido do banco de dados")
+        # Log Informando a exceção
+        logger.exception(f"Falha no processamento do Lead: {str(e)}")
 
         # Em caso de ERRO e o card no podio tiver sido criado ele é excluído para não ocorrer dados órfãos
         if data_podio:
@@ -108,9 +107,6 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCad
     finally:
         # Encerra o banco fechando suas instancias
         db.session.remove()
-
-        # Limpa a resposta da requisição da memória
-        if 'resposta' in locals(): del resposta
 
 @validar
 def validar_token_service(token:str) -> Any:
