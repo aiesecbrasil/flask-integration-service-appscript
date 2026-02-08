@@ -14,7 +14,7 @@ CONFIG_MAP = {
         "credenciais": {
             "CLIENT_SECRET": CLIENT_SECRET_OGX,
             "CLIENT_ID": CLIENT_ID_OGX,
-            "APP_ID": "APP_ID_OGX",
+            "APP_ID": APP_ID_OGX,
             "APP_TOKEN": APP_TOKEN_OGX
         }
     },
@@ -42,7 +42,7 @@ def verificar_rota():
         logger.info("Autenticando endpoint...")
         # 2. Ignoramos o prefixo dinamicamente (pula 'api' e 'v1' ou 'v2')
         # O identificador do serviço geralmente é o 3º elemento (índice 2)
-        adapter.match(path)
+        adapter.match(path,method=request.method)
         if len(parts) >= 3:
             service_name = parts[2]
 
@@ -63,11 +63,11 @@ def verificar_rota():
     except NotFound:
         # Aqui capturamos URLs que não existem na API
         logger.error(f"Rota inexistente acessada: {path}")
-        raise (NotFound,404)
+        raise NotFound
 
     except Exception as e:
         # Captura outros erros (ex: MethodNotAllowed se o método HTTP estiver errado)
         logger.error(f"Erro na validação da rota {path}: {str(e)}")
-        raise (e,400)
+        raise e
 
 __all__ = ["verificar_rota"]
