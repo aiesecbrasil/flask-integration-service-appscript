@@ -1,3 +1,8 @@
+"""
+Submodelos Pydantic de apoio para DTOs de entrada.
+
+EmailItem, TelefoneItem e Comite compõem estruturas usadas em múltiplos DTOs.
+"""
 from pydantic import BaseModel, EmailStr
 
 # =================================================================

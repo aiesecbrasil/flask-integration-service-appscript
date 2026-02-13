@@ -1,3 +1,10 @@
+"""
+Cliente HTTP assíncrono baseado em httpx, com suporte a base_url, prefixo e
+controle de timeout temporário por request.
+
+Observação: todos os métodos HTTP retornam (status_code, body), sendo body o
+JSON decodificado quando disponível, ou None/texto conforme o caso.
+"""
 from app.globals import httpx, Dict, Any,Tuple,Optional
 from urllib.parse import urlencode
 
@@ -63,6 +70,11 @@ class HttpClient:
             path: str = "",
             params: Optional[Dict[str, Any]] = None
     ) -> str:
+        """Monta a URL final combinando base_url, prefix e path, anexando params.
+
+        - Remove barras excedentes para evitar duplicações.
+        - Codifica query params com suporte a listas (doseq=True).
+        """
         if self._base_url:
             # 1. Base: Tiramos a barra da direita (rstrip) para garantir o início
             parts = [self._base_url.rstrip("/")]
@@ -98,6 +110,7 @@ class HttpClient:
         params: Optional[Dict[str, Any]] = None,
         headers=None
     ) -> Tuple[int, Any]:
+        """Executa requisição GET e retorna (status_code, json)."""
 
         if headers is None:
             headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -121,6 +134,13 @@ class HttpClient:
         as_form: bool = False,  # 👈 Adicione este parâmetro
         headers = None
         ) -> Tuple[int, Any]:
+        """
+        Executa requisição POST.
+
+        - Quando as_form=True, envia dados como application/x-www-form-urlencoded.
+        - Caso contrário, envia corpo como JSON.
+        Retorna (status_code, body_decodificado).
+        """
 
         if headers is None:
             headers = {
@@ -149,6 +169,7 @@ class HttpClient:
         params: Optional[Dict[str, Any]] = None,
         headers=None
     ) -> Tuple[int, Any]:
+        """Executa requisição PUT com corpo JSON. Retorna (status_code, body)."""
         if headers is None:
             headers = {
                     "Content-Type": "application/json",
@@ -173,6 +194,7 @@ class HttpClient:
         params: Optional[Dict[str, Any]] = None,
         headers=None
     ) -> Tuple[int, Any]:
+        """Executa requisição PATCH com corpo JSON. Retorna (status_code, body)."""
         if headers is None:
             headers = {
                     "Content-Type": "application/json",
@@ -196,6 +218,12 @@ class HttpClient:
         params: Optional[Dict[str, Any]] = None,
         headers = None
     ) -> Tuple[int, Any]:
+        """
+        Executa requisição DELETE.
+
+        - Retorna (status_code, None) quando 204 ou corpo vazio.
+        - Caso não seja JSON, retorna texto puro.
+        """
         if headers is None:
             headers = {
                     "Content-Type": "application/json",
@@ -221,6 +249,10 @@ class HttpClient:
                 return response.status_code, response.text
 
     def clone(self, **kwargs) -> "HttpClient":
+        """
+        Cria uma nova instância copiando base_url/prefix/timeout da atual,
+        permitindo overrides via kwargs (ex.: prefix, base_url, timeout).
+        """
         # Se 'prefix' não for passado no kwargs, ele usa o da instância atual.
         # Se for passado, ele substitui completamente.
         new_prefix = kwargs.get("prefix", self._prefix)

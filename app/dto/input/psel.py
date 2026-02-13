@@ -1,3 +1,9 @@
+"""
+DTOs de entrada e transformação para o fluxo do Processo Seletivo (PSEL).
+
+Inclui modelos Pydantic para validação dos dados recebidos e métodos auxiliares
+para montar payloads aceitos pelo Podio.
+"""
 from datetime import datetime
 from typing import Dict, List, Any,Optional
 from pydantic import BaseModel, Field, field_validator, model_validator,ConfigDict
@@ -9,7 +15,11 @@ from ..output import ModelPodio
 # =================================================================
 
 class LeadPselInput(BaseModel):
-    """Dados brutos recebidos da requisição externa."""
+    """
+    Dados brutos recebidos da requisição externa.
+
+    Converte data_nascimento a partir de string para datetime quando necessário.
+    """
     model_config = {
         "populate_by_name": True,
         "from_attributes": True
@@ -25,6 +35,7 @@ class LeadPselInput(BaseModel):
     @field_validator("data_nascimento", mode="before")
     @classmethod
     def parse_data(cls, value):
+        """Aceita 'YYYY-MM-DD HH:MM:SS' e fallback para 'YYYY-MM-DD'."""
         if isinstance(value, str):
             try:
                 return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
@@ -33,6 +44,7 @@ class LeadPselInput(BaseModel):
         return value
 
 class ParamsInput(BaseModel):
+    """Parâmetros de rota/consulta para validação de token do PSEL."""
     id:int
     nome:str
     token:str

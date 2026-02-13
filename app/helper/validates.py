@@ -1,14 +1,14 @@
+"""
+Helpers de validação específicos da camada de apresentação/regras de negócio.
+"""
 import re
 from ..globals import List,date,datetime
 def validar_codigo_membresia(codigo: str) -> bool:
     """
-    Valida se o código de membresia possui 5 dígitos numéricos.
+    Valida se o código de membresia possui exatamente 5 dígitos numéricos.
 
-    Args:
-        codigo (str): Código a ser validado.
-
-    Returns:
-        bool: True se válido, False caso contrário.
+    - Remove qualquer caractere que não seja número ou espaço antes de validar.
+    - Aceita espaços, mas o total de caracteres deve ser 5.
     """
     # Remove qualquer caractere que não seja número ou espaço
     codigo_limpo: str = re.sub(r'[^0-9\s]', '', codigo)
@@ -17,13 +17,9 @@ def validar_codigo_membresia(codigo: str) -> bool:
 
 def validar_email_pessoal_obrigatorio(email: str) -> bool:
     """
-    Valida email pessoal em domínios permitidos: gmail.com, hotmail.com, outlook.com, yahoo.com
+    Valida e-mail pessoal obrigatório em domínios permitidos.
 
-    Args:
-        email (str): Email a ser validado.
-
-    Returns:
-        bool: True se válido ou vazio, False caso contrário.
+    Domínios aceitos: gmail.com, hotmail.com, outlook.com, yahoo.com
     """
     dominios_permitidos: List[str] = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com']
     regex_email: str = r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$'
@@ -33,6 +29,11 @@ def validar_email_pessoal_obrigatorio(email: str) -> bool:
     return dominio in dominios_permitidos
 
 def tem_mais_de_31_anos(data_nascimento:datetime|str) -> bool:
+    """
+    Retorna True quando a pessoa tem 31 anos ou menos, False caso tenha mais de 31.
+
+    Aceita datetime, string no formato "%Y-%m-%d %H:%M:%S" ou date (assumido no else).
+    """
     # Converte string para data (formato: YYYY-MM-DD %H:%M:%S)
     # 1. Garante que temos um objeto date, não importa o que venha
     if isinstance(data_nascimento, datetime):

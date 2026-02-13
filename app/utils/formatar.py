@@ -1,3 +1,10 @@
+"""
+Funções utilitárias de formatação de nomes e construção de URLs.
+
+- Remoção de acentos e capitalização de nomes.
+- Limpeza de palavras irrelevantes em nomes/sobrenomes para geração de e-mails.
+- Montagem de URL com query string a partir de um payload.
+"""
 from ..globals import unicodedata,re
 from ..globals import List,Tuple
 from urllib.parse import urlencode
@@ -52,6 +59,18 @@ def limpar_palavras(nome: str, sobrenome: str) -> Tuple[List[str], List[str]]:
 
 @validar
 def formatar_url(url,payload:dict=None) -> str:
+    """
+    Constrói uma URL com parâmetros de query string codificados.
+
+    Parâmetros:
+    - url: str
+        URL base que receberá os parâmetros.
+    - payload: dict | None
+        Dicionário contendo os pares chave/valor a serem codificados na query.
+
+    Retorno:
+    - str: URL resultante no formato "<url>?k1=v1&k2=v2".
+    """
     return f"{url}?{urlencode(payload)}"
 
 __all__ = [

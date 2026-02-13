@@ -1,3 +1,9 @@
+"""
+Controladores (camada HTTP) do Processo Seletivo (PSEL).
+
+Realizam validações de conteúdo e delegam aos serviços a orquestração de
+integrações externas e persistência.
+"""
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pydantic import  ConfigDict
 from app.dto import LeadPselInput,ReponseOutPutPreCadastro,HttpStatus
@@ -8,6 +14,20 @@ from app.helper import tem_mais_de_31_anos
 
 @validar
 def cadastrar_lead_psel_controller(data:LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
+    """
+    Endpoint para pré-cadastro de lead no PSEL.
+
+    Executa validações de conteúdo em paralelo (fail fast) e, em caso de sucesso,
+    delega o processamento completo ao serviço correspondente.
+
+    Parâmetros:
+    - data: LeadPselInput
+        Payload validado pelo framework contendo os dados do lead.
+
+    Retorno:
+    - tuple[ReponseOutPutPreCadastro, int]:
+        Resposta padronizada e o status HTTP.
+    """
     # INICIO DE VALIDADORES
     # AQUI VAI FICAR FUNÇÕES DE VALIDAÇÕES DE CONTEÚDO POIS TIPO É FEITO PELO FRAMEWORK
     # Definimos uma lista de funções de validação simples (nome e data)
@@ -44,6 +64,14 @@ def cadastrar_lead_psel_controller(data:LeadPselInput) -> tuple[ReponseOutPutPre
 
 @validar(config=ConfigDict(arbitrary_types_allowed=True))
 def validar_token_controller(id:int,nome:str,token:str) -> None:
+    """
+    Endpoint que valida o token e redireciona o candidato para o Fit Cultural.
+
+    Parâmetros:
+    - id: int
+    - nome: str
+    - token: str
+    """
     return validar_token_service(id,nome,token)
 
 __all__ = [

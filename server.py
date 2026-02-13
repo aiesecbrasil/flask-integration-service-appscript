@@ -1,3 +1,11 @@
+"""
+Ponto de entrada do servidor.
+
+- Carrega variáveis de ambiente (.env)
+- Configura logging
+- Inicializa a aplicação Flask
+- Executa com app.run (desenvolvimento) ou waitress (produção)
+"""
 import os
 from dotenv import load_dotenv
 

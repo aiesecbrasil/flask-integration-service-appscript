@@ -1,3 +1,9 @@
+"""
+Configuração de logging da aplicação, incluindo:
+- Logger 'app' com rotação diária e flush imediato a cada mensagem
+- Logger 'audit' com rotação e contexto de requisição (IP, usuário, request_id)
+- Logger 'werkzeug' direcionado ao console para evitar duplicação
+"""
 import logging
 import os
 import sys
@@ -13,6 +19,7 @@ raiz_projeto = os.path.abspath(os.path.join(diretorio_atual, "..", ".."))
 LOG_DIR = os.path.join(raiz_projeto, "logs")
 
 class RequestContextFilter(logging.Filter):
+    """Filtro que injeta dados de contexto da requisição nos registros de log."""
     def filter(self, record):
         try:
             from flask import request, g
@@ -27,11 +34,13 @@ class RequestContextFilter(logging.Filter):
         return True
 # ISSO AQUI resolve o seu problema:
 class FlushHandler(TimedRotatingFileHandler):
+    """Handler que força flush no disco a cada emissão para evitar buffering."""
     def emit(self, record):
         super().emit(record)
         self.flush() # Força a injeção no disco a cada mensagem
 
 def setup_logging():
+    """Configura handlers/formatters dos loggers 'app', 'audit' e 'werkzeug'."""
     os.makedirs(LOG_DIR, exist_ok=True)
 
     # -------- FORMATOS --------

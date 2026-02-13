@@ -1,3 +1,7 @@
+"""
+Fábrica da aplicação Flask (OpenAPI) com configuração de CORS, banco,
+Migrações, documentação, middlewares e registro de rotas.
+"""
 import logging
 from flask_openapi3 import OpenAPI, Info
 from flask_cors import CORS
@@ -10,6 +14,16 @@ from .core import DOMINIOS_PERMITIDOS, DB_CONNECT
 
 
 def create_app():
+    """
+    Inicializa e configura a aplicação Flask.
+
+    - Carrega e registra documentação (SpecTree)
+    - Configura CORS baseado nos domínios permitidos
+    - Conecta e inicializa SQLAlchemy, Marshmallow e Flask-Migrate
+    - Executa migrações de banco via manager.migration()
+    - Registra middlewares (before_request e after_request)
+    - Registra rotas da API
+    """
     logger = logging.getLogger(__name__)
     try:
         logger.info("Servidor iniciando...")

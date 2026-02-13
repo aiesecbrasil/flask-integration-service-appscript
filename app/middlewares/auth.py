@@ -3,6 +3,12 @@ auth
 ----
 
 Middleware para validação de API Keys e domínios.
+
+Regras:
+- Rotas em ROTAS_SEM_VALIDACAO são isentas.
+- Se X-API-KEY presente, deve ser autorizada.
+- Domínio (Host) deve pertencer aos domínios permitidos.
+- Em produção, bloqueia requisições diretas.
 """
 import logging
 from ..config import API_KEYS_PERMITIDAS

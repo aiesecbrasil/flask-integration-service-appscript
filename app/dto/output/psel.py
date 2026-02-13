@@ -1,3 +1,8 @@
+"""
+DTOs de saída e envelopes de resposta para PSEL e integração com Podio.
+
+Inclui enum de HttpStatus, envelope ModelPodio e respostas de pré-cadastro.
+"""
 from typing import Dict, Any,Optional
 from enum import IntEnum
 from pydantic import BaseModel, Field, model_validator,ConfigDict
@@ -6,6 +11,7 @@ from pydantic import BaseModel, Field, model_validator,ConfigDict
 # 1. MODELOS DE RESPOSTA GENÉRICOS (BASE)
 # =================================================================
 class HttpStatus(IntEnum):
+    """Enum de códigos HTTP utilizados pelas respostas padronizadas."""
     # Success
     OK = 200
     CREATED = 201
@@ -31,8 +37,10 @@ class HttpStatus(IntEnum):
 
 class ModelPodio(BaseModel):
     """
-    Classe modelo de contrução para envio para o podio
-    Envelopa qualquer resposta no campo 'fields' exigido pelo Podio/AppScript."""
+    Classe modelo de contrução para envio para o Podio.
+
+    Envelopa qualquer resposta no campo 'fields' exigido pelo Podio/AppScript.
+    """
     fields: Dict[str, Any]
 
     @model_validator(mode='before')
@@ -54,13 +62,12 @@ class ModelPodio(BaseModel):
 
 class ReponsePselPreCadastro(BaseModel):
     """
-        Estrutura: {
+    Estrutura:
+        {
             "banco_de_dados": { ... },
-            "podio": {
-                "fields": { ... }
-            }
+            "podio": { "fields": { ... } }
         }
-        """
+    """
     banco_de_dados: Optional[Dict[str, Any]] = Field(default_factory=dict)
     # Union permite aceitar o objeto vivo ou o dicionário para conversão
     podio: ModelPodio
@@ -68,13 +75,14 @@ class ReponsePselPreCadastro(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
 class ReponseOutPutPreCadastro(BaseModel):
+    """Envelope de resposta padrão para o pré-cadastro PSEL."""
     status: str
     message: str
     data: ReponsePselPreCadastro | str
     status_code: HttpStatus
 
     def model_dump(self, **kwargs):
-        # O segredo: forçamos o modo JSON que converte TUDO (incluindo sub-classes) para dict/list/str
+        """Força o modo JSON para serializar sub-classes em dict/list/str."""
         kwargs.update({"mode": "json"})
         return super().model_dump(**kwargs)
 

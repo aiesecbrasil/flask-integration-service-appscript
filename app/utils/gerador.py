@@ -1,3 +1,6 @@
+"""
+Geração de combinações de e-mails institucionais a partir de nome e sobrenome.
+"""
 from ..globals.std import List
 from .formatar import limpar_palavras
 

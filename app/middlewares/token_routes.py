@@ -1,3 +1,7 @@
+"""
+Middleware que verifica a rota acessada e garante que o token do Podio para o
+serviço correspondente esteja em cache, autenticando quando necessário.
+"""
 import logging
 from flask import current_app
 from werkzeug.exceptions import NotFound
@@ -33,6 +37,12 @@ CONFIG_MAP = {
 logger = logging.getLogger(__name__)
 
 def verificar_rota():
+    """
+    Garante metadados/token do Podio para o serviço identificado na rota.
+
+    Identifica o serviço com base no terceiro segmento do path e baixa/renova
+    o token no cache quando existir configuração correspondente.
+    """
     path = request.path  # Ex: /api/v1/new-lead-ogx/metadados
     parts = path.strip("/").split("/")  # ['api', 'v1', 'new-lead-ogx', 'metadados']
 

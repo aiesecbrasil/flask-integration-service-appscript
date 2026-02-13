@@ -1,3 +1,16 @@
+"""
+Serviços do Processo Seletivo (PSEL).
+
+Este módulo orquestra o cadastro de leads no Podio, a persistência no banco de
+dados e o envio do e-mail para realização do Fit Cultural via App Script, além
+da validação do token recebido pelo candidato.
+
+Fluxos principais:
+- cadastrar_lead_psel_service: cria o card no Podio, cadastra o lead no banco,
+  atualiza o status no Podio e dispara o e-mail de Fit Cultural.
+- validar_token_service: valida o token de acesso do candidato e redireciona
+  para a URL do formulário de Fit Cultural quando válido.
+"""
 import logging
 from flask import redirect
 from typing import Any
@@ -16,6 +29,29 @@ from app.helper import formatar_url_fit
 
 @validar
 def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCadastro,int]:
+    """
+    Cadastra um lead do PSEL, cria o item no Podio e envia o e-mail de Fit Cultural.
+
+    Etapas do fluxo:
+    - Monta o payload de envio para o Podio a partir do DTO recebido.
+    - Cria o item (card) no Podio e valida o retorno (id do Podio).
+    - Persiste o lead no banco de dados (transação pendente até commit).
+    - Atualiza o status do lead no Podio para "Fit cultural enviado" (203).
+    - Gera a URL parametrizada para validação do token e envia o e-mail via App Script.
+    - Realiza commit da transação ao final do processamento bem-sucedido.
+
+    Tratamento de erros:
+    - Em caso de exceção, executa rollback e remove o card no Podio (se criado),
+      retornando uma resposta padronizada de erro.
+
+    Parâmetros:
+    - data: LeadPselInput
+        Objeto de entrada contendo os dados necessários para cadastro e envio ao Podio.
+
+    Retorno:
+    - tuple[ReponseOutPutPreCadastro, int]
+        Tupla contendo o payload padronizado de resposta e o status code HTTP.
+    """
     data_podio = None  # dados da resposta recebida do podio
     id_podio = None # id ainda não recuperado do podio
     logger = logging.getLogger(__name__) # instancia do log
@@ -123,11 +159,37 @@ def cadastrar_lead_psel_service(data:LeadPselInput) -> tuple[ReponseOutPutPreCad
 
 @validar
 def validar_token_service(id:int,nome:str,token:str) -> tuple[dict[str, str], int] | Any:
+    """
+    Valida o token de acesso do candidato e redireciona para o formulário de Fit Cultural.
+
+    Regras de validação:
+    - Verifica se o token existe e está ativo.
+    - Garante que o token pertence ao lead (id_podio) informado.
+    - Checa se o token não está expirado.
+
+    Em caso de sucesso, retorna um redirecionamento (HTTP 301) para a URL do Fit Cultural.
+
+    Parâmetros:
+    - id: int
+        Identificador do lead no Podio.
+    - nome: str
+        Nome do candidato, utilizado na composição da URL.
+    - token: str
+        Token enviado ao candidato por e-mail.
+
+    Retorno:
+    - tuple[dict[str, str] | Response, int]
+        Em caso de erro, retorna um dicionário com a mensagem e o status HTTP.
+        Em caso de sucesso, retorna o redirect para a URL do Fit Cultural e o status HTTP.
+    """
     try:
+        # valida se o tokn existe
         if not buscar_token_lead_psel(token):
             return {"erro":"Token Inválido"},HttpStatus.UNAUTHORIZED
+        # verifica se o token é daquele lead
         if not buscar_token_id_podio_lead_psel(id,token):
             return {"erro":"Token não pertence a esse usuário"},HttpStatus.UNAUTHORIZED
+        # verifica se já não expirou
         if agora_sem_timezone() > buscar_data_expiracao(id):
             return {"erro": "Token Expirado"},HttpStatus.UNAUTHORIZED
         payload = {

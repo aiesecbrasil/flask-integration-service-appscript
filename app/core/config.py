@@ -1,3 +1,9 @@
+"""
+Configuração derivada por ambiente (produção vs não-produção).
+
+Define domínios permitidos (CORS/origem), URLs de conexão e flags de ambiente,
+com base em constantes importadas de app.config.settings.
+"""
 from ..config import (AMBIENTE, DOMINIOS_PRODUCAO,DOMINIOS_TESTE,
                       DB_PRODUCAO,DB_TESTE,URL_PRODUCAO,URL_TESTE)
 

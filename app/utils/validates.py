@@ -1,3 +1,9 @@
+"""
+Validações utilitárias para entradas de usuário e dados de domínio.
+
+Inclui validação de nome (com/sem acentos), senha, e-mail (gerado e pessoal),
+telefone (+55 e nacional), foto base64, data de nascimento e tipos de campos.
+"""
 import base64
 from ..globals.std import datetime,date,re,unicodedata,Dict,Any,List
 from .gerador import gerar_email
@@ -133,7 +139,9 @@ def validar_foto(foto: Dict[str, Any]) -> bool:
 
 def validar_email_pessoal(email: str) -> bool:
     """
-    Valida email pessoal em domínios permitidos: gmail.com, hotmail.com, outlook.com, yahoo.com
+    Valida e-mail pessoal em domínios permitidos.
+
+    Domínios aceitos: gmail.com, hotmail.com, outlook.com, yahoo.com
 
     Args:
         email (str): Email a ser validado.
@@ -153,8 +161,10 @@ def validar_email_pessoal(email: str) -> bool:
 
 def validar_data_nascimento(data: datetime | str) -> bool:
     """
-    Valida se a data de nascimento está no formato 'YYYY-MM-DD HH:MM:SS'
-    e se não é uma data futura.
+    Valida a data de nascimento e rejeita datas futuras.
+
+    Aceita datetime já convertido (via Pydantic) ou string em formatos comuns,
+    incluindo ISO (com 'Z').
 
     Args:
         data (datetime | str): Data a ser validada.
@@ -186,13 +196,9 @@ def validar_data_nascimento(data: datetime | str) -> bool:
 
 def validar_tipo_email(tipo_email: str) -> bool:
     """
-    Verifica se todos os tipos de email da lista estão permitidos.
+    Valida se o tipo de e-mail informado está entre os permitidos.
 
-    Args:
-        tipo do emails (str): Lista de emails no formato {"tipo": ..., "email": ...}
-
-    Returns:
-        bool: True se todos forem válidos, False caso algum tipo seja inválido.
+    TIPOS_PERMITIDOS = ["home", "other", "work"].
     """
     TIPOS_PERMITIDOS = ["home", "other", "work"]
     if tipo_email not in TIPOS_PERMITIDOS:
@@ -201,13 +207,9 @@ def validar_tipo_email(tipo_email: str) -> bool:
 
 def validar_tipo_telefone(tipo_telefone: str) -> bool:
     """
-    Verifica se todos os tipos de email da lista estão permitidos.
+    Valida se o tipo de telefone informado está entre os permitidos.
 
-    Args:
-        tipo do telefone (str): Lista de emails no formato {"tipo": ..., "email": ...}
-
-    Returns:
-        bool: True se todos forem válidos, False caso algum tipo seja inválido.
+    TIPOS_PERMITIDOS = ["home","main","mobile","other","private_fax","work","work_fax"].
     """
     TIPOS_PERMITIDOS = ["home","main","mobile","other","private_fax","work","work_fax"]
     if tipo_telefone not in TIPOS_PERMITIDOS:
