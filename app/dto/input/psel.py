@@ -32,6 +32,10 @@ class LeadPselInput(BaseModel):
                 return datetime.strptime(value, "%Y-%m-%d")  # Fallback para data simples
         return value
 
+class ParamsInput(BaseModel):
+    id:int
+    nome:str
+    token:str
 
 # =================================================================
 # 2. MODELOS DE SAÍDA / TRANSFORMAÇÃO (PODIO)
@@ -69,5 +73,6 @@ class AtualizarPodioStatusFitCultural(BaseModel):
 __all__ = [
     "LeadPselInput",
     "LeadPselPodio",
-    "AtualizarPodioStatusFitCultural"
+    "AtualizarPodioStatusFitCultural",
+    "ParamsInput"
 ]

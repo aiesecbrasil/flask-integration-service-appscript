@@ -1,11 +1,16 @@
 from .model import LeadPsel,Telefone,Email,db
 from ..dto import LeadPselInput
+from ..utils import gerar_token
 
 
 @validar
 def cadastrar_lead_psel(data:LeadPselInput,id_podio:int,commit:bool=True) -> LeadPsel:
     # 1. Criar a instância principal do Lead
-    novo_lead = LeadPsel(id_podio=id_podio, nome=data.nome, aiesec_mais_proxima=data.comite.nome)
+    novo_lead = LeadPsel(id_podio=id_podio,
+                         nome=data.nome,
+                         aiesec_mais_proxima=data.comite.nome,
+                         token=gerar_token()
+                )
 
     # 2. Inserir Emails (Lista de objetos do banco)
     # Convertemos cada item da lista do Pydantic para um modelo do SQLAlchemy

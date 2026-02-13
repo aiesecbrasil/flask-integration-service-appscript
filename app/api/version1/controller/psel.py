@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from app.globals import Any,Dict
+from pydantic import  ConfigDict
 from app.dto import LeadPselInput,ReponseOutPutPreCadastro,HttpStatus
-from app.api.version1.services import cadastrar_lead_psel_service
+from app.api.version1.services import cadastrar_lead_psel_service,validar_token_service
 from app.utils import validar_nome_com_acentos, validar_telefone, validar_tipo_telefone, \
     validar_data_nascimento
 from app.helper import tem_mais_de_31_anos
@@ -42,10 +42,11 @@ def cadastrar_lead_psel_controller(data:LeadPselInput) -> tuple[ReponseOutPutPre
     # FIM DE VALIDADORES
     return cadastrar_lead_psel_service(data)
 
-@validar
-def validar_token_controller(data:Dict[str,Any]):
-    return {}
+@validar(config=ConfigDict(arbitrary_types_allowed=True))
+def validar_token_controller(id:int,nome:str,token:str) -> None:
+    return validar_token_service(id,nome,token)
 
 __all__ = [
-    "cadastrar_lead_psel_controller"
+    "cadastrar_lead_psel_controller",
+    "validar_token_controller"
 ]

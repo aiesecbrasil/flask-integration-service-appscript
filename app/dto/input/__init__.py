@@ -1,7 +1,5 @@
 from .psel import *
 
-__all__ = [
-    "LeadPselInput",
-    "LeadPselPodio",
-    "AtualizarPodioStatusFitCultural"
-]
+__all__ = (
+    psel.__all__
+)

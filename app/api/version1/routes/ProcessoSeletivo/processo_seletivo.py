@@ -2,8 +2,9 @@ from app.api.version1.routes import Router
 from app.cache import cache
 from app.clients import metadados
 from app.config import APP_ID_PSEL
-from app.dto import LeadPselInput,ReponseOutPutPreCadastro
-from app.api.version1.controller import cadastrar_lead_psel_controller
+from app.dto import LeadPselInput,ReponseOutPutPreCadastro,ParamsInput
+from app.api.version1.controller import cadastrar_lead_psel_controller,validar_token_controller
+from app.globals import Any
 
 processo_seletivo = Router(name="processo_seletivo", url_prefix="/processo-seletivo")
 
@@ -48,8 +49,11 @@ def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
     """
     return cadastrar_lead_psel_controller(body)
 
-@processo_seletivo.get("/validarToken", description="Rota responsavel por validar token de fit cultural")
-def validar_token():
-    return {}
+@processo_seletivo.get("/validarToken",description="Rota responsavel por validar token de fit cultural")
+def validar_token(query:ParamsInput) -> Any:
+    id = query.id
+    nome = query.nome
+    token = query.token
+    return validar_token_controller(id,nome,token)
 
-__all__ = ["processo_seletivo"]
+__all__ = ["processo_seletivo","validar_token"]

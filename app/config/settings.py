@@ -88,6 +88,10 @@ APPSCRIPT_METADADOS = get_env_or_fail("APPSCRIPT_METADADOS_CARD_OGX")
 APPSCRIPT_ADICIONAR_CARD = get_env_or_fail("APPSCRIPT_ADICIONAR_CARD_OGX")
 ID_APPSCRIPT_EMAIL_LEADS_PSEL = get_env_or_fail("ID_APPSCRIPT_EMAIL_LEADS_PSEL")
 
+# ================================
+# ACESSO EXTERNO
+# ================================
+URL_FIT_CULTURAL=get_env_or_fail("URL_FIT_CULTURAL")
 
 # ================================
 # CACHE
@@ -160,5 +164,8 @@ __all__ = [
     "APPSCRIPT_INSERIR",
     "APPSCRIPT_METADADOS",
     "APPSCRIPT_ADICIONAR_CARD",
-    "ID_APPSCRIPT_EMAIL_LEADS_PSEL"
+    "ID_APPSCRIPT_EMAIL_LEADS_PSEL",
+
+    #Url de acesso Externo
+    "URL_FIT_CULTURAL"
 ]

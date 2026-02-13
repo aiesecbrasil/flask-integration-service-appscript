@@ -13,6 +13,10 @@ def agora(cidade_fuso="America/Sao_Paulo"):
     fuso = pytz.timezone(str(cidade_fuso))
     return datetime.now(fuso)
 
+def agora_sem_timezone(cidade_fuso="America/Sao_Paulo"):
+    fuso = pytz.timezone(str(cidade_fuso))
+    return datetime.now(fuso).replace(tzinfo=None)
+
 def expiracao_3dias(cidade_fuso="America/Sao_Paulo"):
     """
     Retorna a data/hora de expiração 3 dias (72h) a partir de agora
@@ -49,5 +53,6 @@ __all__ = [
     "expiracao_3dias",
     "agora_format_brasil",
     "logging_time_brasil",
-    "agora_format_brasil_mes"
+    "agora_format_brasil_mes",
+    "agora_sem_timezone"
 ]

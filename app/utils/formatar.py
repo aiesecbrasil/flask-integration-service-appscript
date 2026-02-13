@@ -1,5 +1,6 @@
 from ..globals import unicodedata,re
 from ..globals import List,Tuple
+from urllib.parse import urlencode
 
 def formatar_nome(nome: str) -> str:
     """
@@ -49,8 +50,13 @@ def limpar_palavras(nome: str, sobrenome: str) -> Tuple[List[str], List[str]]:
 
     return nomes, sobrenomes
 
+@validar
+def formatar_url(url,payload:dict=None) -> str:
+    return f"{url}?{urlencode(payload)}"
+
 __all__ = [
     "formatar_nome",
     "formatar_nome_com_acentos",
-    "limpar_palavras"
+    "limpar_palavras",
+    "formatar_url"
 ]
