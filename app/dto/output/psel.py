@@ -25,6 +25,7 @@ class HttpStatus(IntEnum):
     OK = 200                # Requisição bem-sucedida
     CREATED = 201           # Recurso criado com sucesso
     NON_AUTHORITATIVE = 203 # Informação de fonte não confiável
+    NO_CONTENT = 204
 
     # Redirecionamento (3xx)
     MOVED_PERMANENTLY = 301 # Recurso movido permanentemente

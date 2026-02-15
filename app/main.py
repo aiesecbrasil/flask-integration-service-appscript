@@ -14,7 +14,7 @@ from .core import db, migrate, ma  # Instâncias de Banco (SQLAlchemy), Migraç�
 from .manager import migration  # Função responsável por gerenciar a execução das migrações de dados
 from .api import api  # Blueprint ou conjunto de rotas principais da aplicação
 from .middlewares import verificar_origem, verificar_rota, register_url  # Funções de interceptação
-from .core import DOMINIOS_PERMITIDOS, DB_CONNECT  # Configurações de ambiente: domínios e banco
+from .core import  DB_CONNECT  # Configurações de ambiente: domínios e banco
 
 
 def create_app() -> OpenAPI:
@@ -118,6 +118,8 @@ def create_app() -> OpenAPI:
         # ==========================
         # Registra métricas, logs de saída ou manipula a resposta final
         app.after_request(register_url)
+        for url in app.url_map.iter_rules():
+            print(url.rule)
 
         return app
 

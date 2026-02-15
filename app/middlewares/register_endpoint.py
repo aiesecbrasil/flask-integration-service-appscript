@@ -31,7 +31,6 @@ def register_url(response: Response) -> Response:
     Returns:
         Response: O mesmo objeto de resposta, agora com headers de cache injetados.
     """
-
     # 1. Extração de Metadados do Ambiente (WSGI)
     # SERVER_PROTOCOL identifica a versão do HTTP (ex: HTTP/1.1)
     protocol = request.environ.get("SERVER_PROTOCOL")

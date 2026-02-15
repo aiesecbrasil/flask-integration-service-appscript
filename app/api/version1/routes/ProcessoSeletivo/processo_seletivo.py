@@ -52,15 +52,18 @@ def buscar_metadados() -> dict:
             chave="psel-token-podio",  # Chave de acesso ao token no cache
             APP_ID=APP_ID_PSEL
         ),
-        baixando="metadados do Processo Seletivo"
+        baixando="Metadados do Processo Seletivo"
     )
-    logger.info("Metadados do processo seletivo baixados com sucesso!")
     return cache.store["metadados_card-psel"]
 
 
 @processo_seletivo.post(
     "/inscricoes",
-    responses={201: ReponseOutPutPreCadastro},
+    responses={
+        201: ReponseOutPutPreCadastro,
+        400: ReponseOutPutPreCadastro,
+        500: ReponseOutPutPreCadastro
+    },
     description="Rota responsável pelo pré-cadastro de novos leads"
 )
 def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
@@ -79,8 +82,7 @@ def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
 @processo_seletivo.get("/validarToken", description="Rota responsável por validar token de fit cultural")
 def validar_token(query: ParamsInput) -> Any:
     """
-    Verifica se o token enviado pelo candidato via URL é válido para 
-    prosseguir com o teste de fit cultural.
+    Verifica se o token enviado pelo candidato via URL é válido para prosseguir com o teste de fit cultural.
     """
     # Extração de parâmetros validados pelo DTO ParamsInput (via Query String)
     id = query.id

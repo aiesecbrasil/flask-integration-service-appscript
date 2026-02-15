@@ -45,10 +45,8 @@ def buscar_metadados() -> dict:
             chave="ogx-token-podio",  # Busca o token de intercâmbio no cache/auth
             APP_ID=APP_ID_OGX  # Aponta para o App de B2C
         ),
-        baixando="metadados de Novos lead B2C"
+        baixando="Metadados de Novos lead B2C"
     )
-
-    logger.info("Metadados de Novos leads B2C baixados com sucesso!")
     # Retorna o conteúdo armazenado no dicionário do cache
     return cache.store["metadados_card-ogx"]
 

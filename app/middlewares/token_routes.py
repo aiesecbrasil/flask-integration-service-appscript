@@ -1,19 +1,29 @@
 """
-Middleware que verifica a rota acessada e garante que o token do Podio para o
-serviço correspondente esteja em cache, autenticando quando necessário.
+Podio Auth Middleware
+---------------------
+Garante que cada conexão com o Podio seja autenticada e otimizada via cache.
+Atua como um guardião de liderança, assegurando que o serviço correto acesse
+os dados necessários com a credencial correta.
 """
 
 # ==============================
 # Importações (Dependencies)
 # ==============================
-import logging                      # Registro de eventos para monitoramento e debug
-from flask import current_app       # Referência à instância atual da aplicação Flask
-from werkzeug.exceptions import NotFound # Exceção padrão para recursos não encontrados
-from ..globals import request       # Objeto que encapsula os dados da requisição HTTP atual
-from ..clients import getAcessToken # Função que realiza a comunicação com a API do Podio para pegar tokens
-from ..cache import cache           # Gerenciador de cache para evitar múltiplas chamadas à API
 
-# Importação de credenciais sensíveis do arquivo de configuração central
+# Ferramentas de Sistema e Logs
+import logging                      # Registro de eventos para monitoramento e auditoria de erros
+
+# Componentes do Framework Flask
+from flask import current_app       # Acesso global às configurações da instância ativa do Flask
+from werkzeug.exceptions import NotFound # Classe padrão para disparar erros 404 de forma limpa
+
+# Recursos Internos da Aplicação
+from ..globals import request       # Extensão do objeto request para capturar headers e caminhos
+from ..clients import getAcessToken # Client responsável pelo handshake de OAuth2 com a API do Podio
+from ..cache import cache           # Mecanismo de persistência temporária para otimizar performance
+
+# Configurações de Segurança e Identidade
+# Importação de credenciais sensíveis (Secrets) para os diferentes produtos AIESEC
 from ..config import (
     CLIENT_SECRET_OGX, CLIENT_ID_OGX, APP_ID_OGX, APP_TOKEN_OGX,
     CLIENT_SECRET_PSEL, CLIENT_ID_PSEL, APP_ID_PSEL, APP_TOKEN_PSEL
@@ -23,8 +33,8 @@ from ..config import (
 # Configuração de Serviços
 # ==============================
 
-# Mapa que associa o nome do serviço (slug na URL) às suas credenciais de autenticação.
-# Isso centraliza a manutenção: para adicionar um novo serviço, basta mexer aqui.
+# Mapa de Atribuição: Associa o slug da URL às credenciais específicas.
+# "Leadership is about making others better as a result of your presence."
 CONFIG_MAP = {
     "new-lead-ogx": {
         "key": "ogx-token-podio",
@@ -46,8 +56,10 @@ CONFIG_MAP = {
     }
 }
 
-# Logger específico do módulo para rastrear falhas de roteamento e autenticação
+# Instância de log para rastreabilidade de processos AIESEC
 logger = logging.getLogger(__name__)
+
+
 
 # ==============================
 # Função Principal (Middleware)
@@ -55,77 +67,72 @@ logger = logging.getLogger(__name__)
 
 def verificar_rota() -> None:
     """
-    Garante metadados/token do Podio para o serviço identificado na rota.
+    Middleware de Inspeção de Rota.
+
+    Analisa o path da requisição para identificar o serviço (OGX, PSEL, etc)
+    e garante que um token válido do Podio esteja disponível no cache.
     """
-    # 1. Captura o caminho da URL (Ex: /api/v1/processo-seletivo/metadados)
+    # 1. Extração do caminho da URL (ex: /api/v1/new-lead-ogx/...)
     path: str = request.path
 
-    # 2. Divide a string em partes ignorando as barras iniciais e finais
-    # Transformamos o path em uma lista de segmentos: ['api', 'v1', 'processo-seletivo', 'metadados']
+    # 2. Segmentação do path para identificação do serviço
     parts: list[str] = path.strip("/").split("/")
 
-    # 3. Criamos um "Adapter" do mapa de rotas do Flask
-    # bind() é essencial aqui pois estamos verificando a rota manualmente antes de
-    # ela ser despachada para o controller final.
+    # 3. Bind do Adapter para validação manual de rota no contexto da aplicação
     adapter = current_app.url_map.bind("api.meu-site.com")
 
     try:
-        logger.info(f"Middleware verificando endpoint: {path}")
+        logger.info(f"AIESEC Middleware | Verificando endpoint: {path}")
 
-        # 4. Validação de Existência e Método:
-        # O Flask verifica se a URL existe e se o método (GET/POST/etc) é permitido.
-        # Se falhar, o Werkzeug lança automaticamente NotFound ou MethodNotAllowed.
+        # 4. Validação de Existência (Match):
+        # Garante que a URL e o Método existam no mapa de rotas.
         adapter.match(path, method=request.method)
 
-        # 5. Lógica de Identificação do Serviço:
-        # Por padrão, o identificador do serviço (Ex: 'processo-seletivo')
-        # está no terceiro segmento do path (índice 2).
+        # 5. Identificação do Serviço (Estratégia de Segmento):
+        # O serviço é identificado no índice 2 da rota (/api/v1/{servico}/...)
         if len(parts) >= 3:
             service_name: str = parts[2]
 
-            # 6. Busca as configurações de credenciais no mapa definido acima
+            # 6. Recuperação de Configuração
             config: dict = CONFIG_MAP.get(service_name)
 
             if config:
-                logger.info(f"Verificando autenticação para o serviço: {service_name}")
+                logger.info(f"AIESEC Auth | Validando token para: {service_name}")
 
-                #
-
-                # 7. Gerenciamento do Token via Cache (Estratégia Lazy Loading):
-                # O 'get_or_set' evita chamadas repetitivas e desnecessárias à API do Podio.
-                # Se o token estiver no cache e for válido, ele o recupera instantaneamente.
-                # Se não (lambda fetch), ele dispara o 'getAcessToken' e atualiza o cache.
+                # 7. Estratégia de Cache (Lazy Loading):
+                # Otimiza o tempo de resposta e evita o rate limit da API do Podio.
                 cache.get_or_set(
                     key=config["key"],
                     fetch=lambda: getAcessToken(config["credenciais"]),
-                    baixando="chave de acesso ao podio"
+                    baixando="Chave de Acesso ao Podio"
                 )
-                logger.info(f"Token do Podio para {service_name} validado com sucesso.")
+                logger.info(f"AIESEC Auth | Token validado para {service_name}.")
 
-            logger.info("Validação do middleware concluída.")
+            logger.info("AIESEC Middleware | Validação concluída com sucesso.")
+
+        # 8. Tratamento de Exceções de Documentação e Estáticos
+        # Permite o acesso livre a rotas de documentação técnica
+        elif parts[1] in ["docs","register"] or parts[0] in ["apidoc","openapi","static"]:
+            return None
         else:
-            # Caso o path seja menor do que o esperado (Ex: apenas /api/v1/)
-            logger.warning(f"Acesso a endpoint genérico sem identificação de serviço: {path}")
+            logger.warning(f"AIESEC Middleware | Endpoint genérico acessado: {path}")
 
         return None
 
     except NotFound:
-        # Erro quando o usuário digita uma URL que não existe na API
-        logger.error(f"Erro 404: Endpoint '{path}' não existe ou método '{request.method}' proibido.")
+        logger.error(f"AIESEC 404 | Endpoint '{path}' inexistente ou método proibido.")
         raise NotFound(f"O recurso {path} não foi encontrado no servidor.")
 
     except ValueError as ve:
-        # Erro de processamento interno ou parâmetros inválidos na extração do path
         mensagem: str = f"Inconsistência de valores na rota {path}: {str(ve)}"
         logger.error(mensagem)
         raise ValueError(mensagem)
 
     except Exception as e:
-        # Captura erros inesperados (Ex: queda de conexão com o Podio ou erro de sintaxe)
-        logger.error(f"Falha crítica no middleware de rota: {str(e)}")
+        logger.error(f"AIESEC Critical Error | Falha no middleware: {str(e)}")
         raise e
 
 # ==============================
-# Exportações
+# Exportações do Módulo
 # ==============================
 __all__ = ["verificar_rota"]

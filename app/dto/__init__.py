@@ -26,6 +26,6 @@ from .output import *
 # O __all__ aqui expõe os submódulos para permitir acesso via namespace
 # Exemplo: from app.dtos import input, output
 __all__ = [
-   "input",   # Referência ao pacote de modelos de entrada
-   "output"   # Referência ao pacote de modelos de saída
+   input,   # Referência ao pacote de modelos de entrada
+   output   # Referência ao pacote de modelos de saída
 ]

@@ -77,7 +77,7 @@ class CacheManager:
             "data": data,
             "timestamp": now
         }
-
+        logger.info(f"{baixando.title()} Concluido com Sucesso!")
         return jsonify(data), status
 
 # Instância única (Singleton) para ser compartilhada por toda a aplicação

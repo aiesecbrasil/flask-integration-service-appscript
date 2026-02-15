@@ -3,6 +3,9 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# arquivo .py
+export_requirements.py
+
 # C extensions
 *.so
 
