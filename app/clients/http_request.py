@@ -5,28 +5,34 @@ controle de timeout temporário por request.
 Observação: todos os métodos HTTP retornam (status_code, body), sendo body o
 JSON decodificado quando disponível, ou None/texto conforme o caso.
 """
-from app.globals import httpx, Dict, Any,Tuple,Optional
-from urllib.parse import urlencode
+
+# ==============================
+# Importações (Dependencies)
+# ==============================
+from app.globals import httpx, Dict, Any, Tuple, Optional # Tipagem e cliente HTTP assíncrono
+from urllib.parse import urlencode                         # Para codificação segura de query parameters
+
+#
 
 class HttpClient:
     """
-    Cliente HTTP assíncrono.
+    Cliente HTTP assíncrono modular.
 
-    - timeout_base: timeout padrão da instância
-    - timeout: override temporário (auto-reset)
+    - timeout_base: timeout padrão da instância (estratégia de longo prazo)
+    - timeout: override temporário (estratégia de curto prazo para chamadas específicas)
     """
 
     def __init__(
         self,
-        base_url: str = "",
-        prefix: str = "",
-        timeout: Optional[float] = None
+        base_url: str = "", # URL raiz (ex: https://api.podio.com)
+        prefix: str = "",   # Prefixo de rota (ex: /item)
+        timeout: Optional[float] = None # Tempo limite padrão em segundos
     ):
-        # 🔒 Infraestrutura
-        self._base_url = base_url.rstrip("/")
+        # 🔒 Infraestrutura Base
+        self._base_url = base_url.rstrip("/") # Garante que não termine com barra
         self._prefix = prefix
 
-        # 🌐 Timeout
+        # 🌐 Controle de Timeout
         self._timeout_base = timeout
         self._timeout_override: Optional[float] = None
 
@@ -37,7 +43,8 @@ class HttpClient:
     @property
     def timeout(self) -> Optional[float]:
         """
-        Retorna o timeout atual (override se existir).
+        Retorna o timeout que será usado na próxima chamada.
+        Prioriza o override temporário se ele tiver sido definido.
         """
         return (
             self._timeout_override
@@ -48,14 +55,14 @@ class HttpClient:
     @timeout.setter
     def timeout(self, value: Optional[float]):
         """
-        Define um timeout temporário.
-        Ele será resetado automaticamente após a próxima request.
+        Define um timeout temporário para a PRÓXIMA requisição apenas.
         """
         self._timeout_override = value
 
     def _consume_timeout(self) -> Optional[float]:
         """
-        Usa o timeout atual e reseta o override.
+        Recupera o valor de timeout e limpa o override imediatamente.
+        Auto-reset: garante que o override não afete chamadas subsequentes indesejadas.
         """
         timeout = self.timeout
         self._timeout_override = None
@@ -70,30 +77,33 @@ class HttpClient:
             path: str = "",
             params: Optional[Dict[str, Any]] = None
     ) -> str:
-        """Monta a URL final combinando base_url, prefix e path, anexando params.
+        """
+        Monta a URL final combinando base_url, prefix e path, anexando params.
 
-        - Remove barras excedentes para evitar duplicações.
-        - Codifica query params com suporte a listas (doseq=True).
+        Lógica:
+        - Limpa barras repetidas (ex: base//prefix/path -> base/prefix/path).
+        - Sanitiza cada parte da URL antes de concatenar.
         """
         if self._base_url:
-            # 1. Base: Tiramos a barra da direita (rstrip) para garantir o início
+            # 1. Base: Raiz da API
             parts = [self._base_url.rstrip("/")]
 
-            # 2. Prefixo: Tiramos barras de ambos os lados (strip)
+            # 2. Prefixo: Módulos específicos da API (ex: /app ou /org)
             if self._prefix:
                 clean_prefix = self._prefix.strip("/")
-                if clean_prefix:  # Evita adicionar strings vazias
+                if clean_prefix:
                     parts.append(clean_prefix)
 
-            # 3. Path: Tiramos barras de ambos os lados (strip)
+            # 3. Path: O endpoint final da requisição
             if path:
                 clean_path = path.strip("/")
                 if clean_path:
                     parts.append(clean_path)
 
-            # 4. Junta tudo: O "/" será o único separador entre as partes
+            # Junta as partes usando barra única como separador
             url = "/".join(parts)
 
+            # Adiciona Query Params se existirem (ex: ?id=123&status=active)
             if params:
                 url += f"?{urlencode(params, doseq=True)}"
 
@@ -110,7 +120,7 @@ class HttpClient:
         params: Optional[Dict[str, Any]] = None,
         headers=None
     ) -> Tuple[int, Any]:
-        """Executa requisição GET e retorna (status_code, json)."""
+        """Executa requisição GET e retorna (status_code, json_body)."""
 
         if headers is None:
             headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -122,7 +132,7 @@ class HttpClient:
             response = await client.get(
                 url,
                 headers=headers,
-                follow_redirects=True
+                follow_redirects=True # Segue redirecionamentos (301, 302)
             )
             return response.status_code, response.json()
 
@@ -131,21 +141,16 @@ class HttpClient:
         path: str = "",
         payload: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
-        as_form: bool = False,  # 👈 Adicione este parâmetro
+        as_form: bool = False, # Define se envia como JSON ou Formulário x-www-form-urlencoded
         headers = None
         ) -> Tuple[int, Any]:
         """
-        Executa requisição POST.
-
-        - Quando as_form=True, envia dados como application/x-www-form-urlencoded.
-        - Caso contrário, envia corpo como JSON.
-        Retorna (status_code, body_decodificado).
+        Executa requisição POST com suporte a JSON ou Form Data.
         """
 
         if headers is None:
             headers = {
-                "Content-Type": f"{
-                "application/x-www-form-urlencoded" if as_form else "application/json"}",
+                "Content-Type": "application/x-www-form-urlencoded" if as_form else "application/json",
                 "Accept": "application/json"
             }
 
@@ -153,12 +158,11 @@ class HttpClient:
         url = self._build_url(path, params)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
-            # Seleciona o cabeçalho e o argumento correto do httpx
             if as_form:
-                # Usamos 'data' para Form Data
+                # 'data' envia como formulário clássico
                 response = await client.post(url, data=payload, headers=headers, follow_redirects=True)
             else:
-                # Usamos 'json' para JSON
+                # 'json' serializa automaticamente o dicionário
                 response = await client.post(url, json=payload, headers=headers, follow_redirects=True)
             return response.status_code, response.json()
 
@@ -169,22 +173,14 @@ class HttpClient:
         params: Optional[Dict[str, Any]] = None,
         headers=None
     ) -> Tuple[int, Any]:
-        """Executa requisição PUT com corpo JSON. Retorna (status_code, body)."""
+        """Executa requisição PUT (substituição total) com corpo JSON."""
         if headers is None:
-            headers = {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-            }
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
         timeout = self._consume_timeout()
         url = self._build_url(path, params)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.put(
-                url,
-                json=payload,
-                headers=headers,
-                follow_redirects=True
-            )
+            response = await client.put(url, json=payload, headers=headers, follow_redirects=True)
             return response.status_code, response.json()
 
     async def patch(
@@ -194,22 +190,14 @@ class HttpClient:
         params: Optional[Dict[str, Any]] = None,
         headers=None
     ) -> Tuple[int, Any]:
-        """Executa requisição PATCH com corpo JSON. Retorna (status_code, body)."""
+        """Executa requisição PATCH (atualização parcial) com corpo JSON."""
         if headers is None:
-            headers = {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-            }
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
         timeout = self._consume_timeout()
         url = self._build_url(path, params)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.patch(
-                url,
-                json=payload,
-                headers=headers,
-                follow_redirects=True
-            )
+            response = await client.patch(url, json=payload, headers=headers, follow_redirects=True)
             return response.status_code, response.json()
 
     async def delete(
@@ -219,45 +207,33 @@ class HttpClient:
         headers = None
     ) -> Tuple[int, Any]:
         """
-        Executa requisição DELETE.
-
-        - Retorna (status_code, None) quando 204 ou corpo vazio.
-        - Caso não seja JSON, retorna texto puro.
+        Executa requisição DELETE e trata casos de corpo vazio ou texto.
         """
         if headers is None:
-            headers = {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-            }
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
         timeout = self._consume_timeout()
         url = self._build_url(path, params)
 
         async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.delete(
-                url,
-                headers=headers,
-                follow_redirects=True
-            )
-            # 🛡️ PROTEÇÃO CONTRA CORPO VAZIO (STATUS 204)
+            response = await client.delete(url, headers=headers, follow_redirects=True)
+
+            # 🛡️ Tratamento de status 204 (No Content) ou corpo realmente vazio
             if response.status_code == 204 or not response.content:
                 return response.status_code, None
 
             try:
                 return response.status_code, response.json()
             except Exception:
-                # Se não for JSON, retorna como texto puro
+                # Fallback para texto se a resposta não for um JSON válido
                 return response.status_code, response.text
 
     def clone(self, **kwargs) -> "HttpClient":
         """
-        Cria uma nova instância copiando base_url/prefix/timeout da atual,
-        permitindo overrides via kwargs (ex.: prefix, base_url, timeout).
+        Cria uma cópia da instância atual (Deep Copy parcial).
+        Útil para criar clientes especializados a partir de uma base comum.
         """
-        # Se 'prefix' não for passado no kwargs, ele usa o da instância atual.
-        # Se for passado, ele substitui completamente.
         new_prefix = kwargs.get("prefix", self._prefix)
 
-        # Criamos a nova instância sempre tratando as barras
         client = HttpClient(
             base_url=kwargs.get("base_url", self._base_url),
             prefix=new_prefix,
@@ -266,5 +242,7 @@ class HttpClient:
         client._timeout_override = kwargs.get("timeout_override", self._timeout_override)
         return client
 
-
+# ==============================
+# Exportações do Módulo
+# ==============================
 __all__ = ["HttpClient"]

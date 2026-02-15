@@ -1,70 +1,114 @@
-import os
-import sys
-import logging
-from flask_migrate import init, migrate, upgrade, downgrade, current, show,stamp
+"""
+Módulo de Automação de Migrações.
+
+Gerencia a criação de tabelas, controle de versão do esquema e sincronização
+entre os modelos SQLAlchemy e o banco de dados via CLI ou inicialização automática.
+"""
+
+# ==============================
+# Importações (Dependencies)
+# ==============================
+import os  # Interação com o sistema de arquivos (verificar diretórios)
+import sys  # Acesso aos argumentos passados via terminal (CLI)
+import logging  # Registro de logs das operações de banco de dados
+
+# Componentes do Flask-Migrate para manipulação das versões do banco
+from flask_migrate import init, migrate, upgrade, downgrade, current, show, stamp
+
+
+# ==============================
+# Orquestrador de Migração
+# ==============================
 
 def migration() -> None:
     """
-    Função de migração do banco de dados.
-    - Cria migrations se não existir (auto migrate + upgrade)
-    - Detecta comando do terminal: migrate / upgrade / downgrade
-    - Mostra debug das versões
+    Gerencia o estado do esquema do banco de dados.
+
+    A função realiza três tarefas principais:
+    1. Setup Automático: Cria o ambiente de migrações caso seja a primeira execução.
+    2. Interface CLI: Escuta comandos 'migrate', 'upgrade' ou 'downgrade' vindos do terminal.
+    3. Versionamento: Garante que o banco esteja na última revisão disponível.
+
+
+
+    Returns:
+        None
     """
-    # 1. capturando argumentos do terminal
+    # 1. Capturando argumentos do terminal (ex: python app.py upgrade)
     args = sys.argv
-    # 2. Caminho atual
+
+    # 2. Localização lógica do projeto
+    # Necessário para garantir que a pasta 'migrations' fique na raiz, independente de onde o script é chamado
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
-    # 3. Raiz do projeto
     raiz_projeto = os.path.abspath(os.path.join(diretorio_atual, "..", ".."))
-    # 4. Pasta migrations
     migrations_dir = os.path.join(raiz_projeto, 'migrations')
-    # 5. Criando Log
+
+    # 3. Instanciando o Logger para monitoramento
     logger = logging.getLogger(__name__)
-    # ---------- 1. Inicializa migrations automaticamente se não existir ----------
+
+    # ---------- 1. Inicialização Automática (First Run) ----------
+    # Se a pasta 'migrations' não existe, o sistema prepara o banco do zero
     if not os.path.exists(migrations_dir):
-        logger.info(f"Diretório migrations não existe, criando em: {migrations_dir}")
+        logger.info(f"Diretório migrations não detectado. Iniciando setup em: {migrations_dir}")
         try:
+            # Inicializa o repositório do Alembic
             init(directory=migrations_dir)
-            logger.info("Diretório migrations criado!")
-            logger.info("Gerando primeira migration (auto)...")
+
+            # Detecta as mudanças nos modelos e gera o script inicial
+            logger.info("Gerando script de migração inicial...")
             migrate(directory=migrations_dir)
-            logger.info("Aplicando upgrade inicial...")
+
+            # Cria efetivamente as tabelas no banco de dados
+            logger.info("Executando upgrade para criação das tabelas...")
             upgrade(directory=migrations_dir)
-            logger.info("Migration inicial e upgrade aplicados!")
+
+            logger.info("Infraestrutura de banco de dados pronta!")
         except Exception as e:
-            logger.error(f"Falha ao inicializar migrations: {e}")
+            logger.error(f"Falha crítica na inicialização do banco: {e}")
             return
 
-    # ---------- 2. Detecta comando do terminal ----------
+    # ---------- 2. Processamento de Comandos CLI ----------
+    # Permite gerenciar o banco via terminal: 'python main.py migrate'
+
+    # Gera um novo script de migração baseado nas alterações dos Models
     if "migrate" in args:
-        logger.info("Usuário executou MIGRATE")
+        logger.info("Comando detectado: MIGRATE (Detectando alterações...)")
         try:
             migrate(directory=migrations_dir)
-            logger.info("MIGRATE concluído!")
+            logger.info("Script de migração gerado com sucesso!")
         except Exception as e:
-            logger.error(f"Falha no migrate: {e}")
+            logger.error(f"Erro ao gerar migração: {e}")
 
+    # Aplica as migrações pendentes ao banco de dados
     elif "upgrade" in args:
-        logger.info("Usuário executou UPGRADE")
+        logger.info("Comando detectado: UPGRADE (Sincronizando banco...)")
         try:
             upgrade(directory=migrations_dir)
-            logger.info("UPGRADE concluído!")
+            logger.info("Banco de dados atualizado para a versão mais recente!")
         except Exception as e:
-            logger.error(f"Falha no upgrade: {e}")
+            logger.error(f"Erro ao aplicar upgrade: {e}")
 
+    # Reverte a última alteração feita no banco
     elif "downgrade" in args:
-        logger.info("Usuário executou DOWNGRADE")
+        logger.info("Comando detectado: DOWNGRADE (Revertendo última versão...)")
         try:
-            downgrade(directory=migrations_dir,sql=True)
-            logger.info("DOWNGRADE concluído!")
+            # sql=True pode ser usado para gerar o script SQL em vez de executar
+            downgrade(directory=migrations_dir)
+            logger.info("Downgrade concluído com sucesso!")
         except Exception as e:
-            logger.error(f"Falha no downgrade: {e}")
+            logger.error(f"Erro ao reverter migração: {e}")
 
-
-    # ---------- 3. Debug ----------
-    """try:
-        logger.debug(f"Versão atual do banco: {current(directory=migrations_dir)}")
-        logger.debug("Migrations disponíveis:")
-        logger.info(show(directory=migrations_dir))
+    # ---------- 3. Debug (Opcional) ----------
+    # Útil para conferir em qual versão (Hash) o banco se encontra no momento
+    """
+    try:
+        logger.debug(f"Revisão atual do banco: {current(directory=migrations_dir)}")
     except Exception as e:
-        logger.error(f"Debug migrations: {e}")"""
+        logger.error(f"Erro ao ler versão atual: {e}")
+    """
+
+
+# ==============================
+# Exportações
+# ==============================
+__all__ = ["migration"]
