@@ -205,7 +205,7 @@ def documentacao() -> str:
         <div class="container">
             <div class="intro-text">
                 <h1>Seja bem-vindo, <span class="highlight">Leader Developer!</span></h1>
-                <p>Nossa API é o motor que conecta processos Nacionais da AIESEC no Brasil. <br>
+                <p>Nossa API é o motor que conecta projetos nacionais da AIESEC no Brasil. <br>
                 Abaixo você encontra todas as interfaces de documentação técnica disponíveis.</p>
             </div>
 
@@ -226,7 +226,7 @@ def documentacao() -> str:
         </div>
 
         <footer>
-            <strong>AIESEC Hub | Global Information Systems</strong><br>
+            <strong>AIESEC No Brasil | Documentação de Código</strong><br>
             Desenvolvido para causar impacto e conectar jovens ao redor do mundo. <br>
             &copy; 2026 Todos os direitos reservados.
         </footer>
@@ -238,6 +238,9 @@ def documentacao() -> str:
 
 @api.get("/register")
 def registro():
+    """
+    Responsável por fazer o registro do IPV6 de quem tem autorização para acessar a documentação.
+    """
     storage.add_ip(request.headers.get("X-Forwarded-For"))
     return "",HttpStatus.NO_CONTENT
 
