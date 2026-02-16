@@ -17,7 +17,8 @@ from app.config import APP_ID_PSEL  # ID do App de PSEL no Podio (vindo do .env)
 from app.dto import (  # Data Transfer Objects para validação de entrada/saída
     LeadPselInput,
     ReponseOutPutPreCadastro,
-    ParamsInput
+    ParamsInput,
+    Metadados
 )
 from app.api.version1.controller import (  # Lógica de negócio (Controllers) que processa os dados
     cadastrar_lead_psel_controller,
@@ -38,7 +39,7 @@ logger = logging.getLogger(__name__)
 # ENDPOINTS (ROTAS)
 # =================================================================
 
-@processo_seletivo.get("/metadados")
+@processo_seletivo.get("/metadados",responses={200:Metadados})
 def buscar_metadados() -> dict:
     """
     Retorna a estrutura (campos) do App de PSEL no Podio.
@@ -54,7 +55,7 @@ def buscar_metadados() -> dict:
         ),
         baixando="Metadados do Processo Seletivo"
     )
-    return cache.store["metadados_card-psel"]
+    return Metadados(**cache.store["metadados_card-psel"]).model_dump()
 
 
 @processo_seletivo.post(
@@ -63,17 +64,18 @@ def buscar_metadados() -> dict:
         201: ReponseOutPutPreCadastro,
         400: ReponseOutPutPreCadastro,
         500: ReponseOutPutPreCadastro
-    },
-    description="Rota responsável pelo pré-cadastro de novos leads"
+    }
 )
 def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
     """
+    Pré-Cadastro para o Processo Seletivo AIESEC.
+
     Fluxo complexo de inscrição:
-    1. Valida o input via LeadPselInput.
-    2. Cria o card no Podio.
-    3. Salva no Banco de Dados local.
-    4. Dispara e-mail de confirmação via Google Script.
-    5. Reverte operações (Rollback) em caso de falha em qualquer etapa.
+        1. Valida o input via LeadPselInput.
+        2. Cria o card no Podio.
+        3. Salva no Banco de Dados local.
+        4. Dispara e-mail de confirmação via Google Script.
+        5. Reverte operações (Rollback) em caso de falha em qualquer etapa.
     """
     # Delega a orquestração para o controller especializado
     return cadastrar_lead_psel_controller(body)

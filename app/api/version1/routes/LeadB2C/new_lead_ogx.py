@@ -14,7 +14,7 @@ from app.api.version1.routes import Router  # Classe base de roteamento integrad
 from app.cache import cache  # Gerenciador de cache para otimizar chamadas de API
 from app.config import APP_ID_OGX  # ID do App de Leads B2C no Podio (configurado no .env)
 from app.clients import metadados  # Função cliente para buscar campos e configurações do Podio
-
+from app.dto import Metadados
 # =================================================================
 # CONFIGURAÇÃO DO ROTEADOR OGX
 # =================================================================
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 # ENDPOINTS (ROTAS)
 # =================================================================
 
-@new_lead_ogx.get("/metadados")
+@new_lead_ogx.get("/metadados",responses={200:Metadados})
 def buscar_metadados() -> dict:
     """
     Retorna a estrutura de campos do App de Leads B2C do Podio.
@@ -48,7 +48,7 @@ def buscar_metadados() -> dict:
         baixando="Metadados de Novos lead B2C"
     )
     # Retorna o conteúdo armazenado no dicionário do cache
-    return cache.store["metadados_card-ogx"]
+    return Metadados(**cache.store["metadados_card-ogx"]).model_dump()
 
 
 @new_lead_ogx.post("/inscricoes")

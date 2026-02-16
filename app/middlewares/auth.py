@@ -93,8 +93,6 @@ def verificar_origem() -> None | tuple[dict[str, str], Literal[HttpStatus.UNAUTH
 
     # 2. Segmentação do path para identificação do serviço
     parts: list[str] = path.strip("/").split("/")
-    print(parts)
-    print(request.headers)
     if parts[1] in ["docs"] or parts[0] in ["apidoc","openapi","static"]:
         allow_ip_list = storage.get_ip()
         if request.headers.get("X-Forwarded-For") not in allow_ip_list:

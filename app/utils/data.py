@@ -13,6 +13,7 @@ import pytz  # Biblioteca para manipulação de definições de fuso horário (I
 import locale  # Permite a localização de strings (como nomes de meses em português)
 import time  # Fornece o tipo struct_time para o logging
 from datetime import timedelta  # Utilizado para cálculos de aritmética de datas
+from zoneinfo import ZoneInfo
 from ..globals import datetime  # Instância global de datetime para consistência no projeto
 
 # Configura o ambiente para processar nomes de meses e dias da semana em Português do Brasil
@@ -36,8 +37,10 @@ def agora_timestamp(cidade_fuso: str = "America/Sao_Paulo") -> float:
     Returns:
         float: Segundos decorridos desde 01/01/1970 (Epoch).
     """
+    SEGUNDOS_HORAS:int = 3600 # constante refletindo 1 hora em segundos
     fuso = pytz.timezone(str(cidade_fuso))
-    return datetime.now(fuso).timestamp()
+    time_zone:float = float(ZoneInfo(cidade_fuso).tzname(datetime.now(fuso))) * SEGUNDOS_HORAS
+    return datetime.now(fuso).timestamp() + time_zone
 
 def agora(cidade_fuso: str = "America/Sao_Paulo") -> datetime:
     """

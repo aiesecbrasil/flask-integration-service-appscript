@@ -11,6 +11,7 @@ from pydantic import (
     BaseModel, # Classe base para criação de modelos de dados com validação
     EmailStr   # Tipo especializado para validar se a string é um e-mail real (formato RFC)
 )
+from app.globals import Dict,Any,datetime
 
 # =================================================================
 # 1. SUB-MODELOS DE APOIO
@@ -46,10 +47,19 @@ class Comite(BaseModel):
 
 
 # ==============================
+# METADADOS
+# ==============================
+
+class Metadados(BaseModel):
+    data:Dict[str,Any]
+    timestamp:float
+
+# ==============================
 # Exportações do Módulo
 # ==============================
 __all__ = [
     "Comite",
     "TelefoneItem",
-    "EmailItem"
+    "EmailItem",
+    "Metadados"
 ]

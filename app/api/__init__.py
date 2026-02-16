@@ -25,10 +25,7 @@ api = Router(name="api", url_prefix="/api")
 # Registra o módulo da Versão 1 no roteador principal.
 api.register_api(v1)
 
-# Lista temporária para gerenciamento de IPs permitidos
-list_ip = []
-
-@api.get("/docs",description="Página HTML da Documentação")
+@api.get("/docs",description="Página HTML da Documentação",responses={200:None})
 def documentacao() -> str:
     """
     Página de documentação estilizada com a identidade AIESEC.
@@ -236,7 +233,7 @@ def documentacao() -> str:
 
     return render_template_string(template, rotas=rotas)
 
-@api.get("/register")
+@api.get("/register",responses={204:None})
 def registro():
     """
     Responsável por fazer o registro do IPV6 de quem tem autorização para acessar a documentação.

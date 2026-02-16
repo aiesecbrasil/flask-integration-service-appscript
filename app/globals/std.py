@@ -29,14 +29,15 @@ from datetime import datetime, date  # Classes para representação de data e ho
 # ==============================
 # Essencial para garantir a segurança de tipos e o funcionamento do Pydantic/Mypy
 from typing import (
-    Any,        # Aceita qualquer tipo de dado
-    Dict,       # Tipo dicionário {chave: valor}
-    List,       # Tipo lista [item1, item2]
-    Optional,   # Indica que o valor pode ser do tipo especificado ou None
-    Tuple,      # Tipo tupla (imutável)
-    Callable,   # Indica um objeto que pode ser chamado (função)
-    Iterable,   # Indica objetos que podem ser iterados (listas, sets, generators)
-    Union       # Permite que uma variável aceite mais de um tipo (ex: Union[int, str])
+    Any,  # Aceita qualquer tipo de dado
+    Dict,  # Tipo dicionário {chave: valor}
+    List,  # Tipo lista [item1, item2]
+    Optional,  # Indica que o valor pode ser do tipo especificado ou None
+    Tuple,  # Tipo tupla (imutável)
+    Callable,  # Indica um objeto que pode ser chamado (função)
+    Iterable,  # Indica objetos que podem ser iterados (listas, sets, generators)
+    Union,  # Permite que uma variável aceite mais de um tipo (ex: Union[int, str])
+    Literal
 )
 
 # ==============================
@@ -71,6 +72,7 @@ __all__ = [
     "Callable",
     "Iterable",
     "Union",
+    "Literal",
 
     # URL Utils
     "urlparse",
