@@ -14,7 +14,7 @@ from secrets import token_urlsafe  # Gera strings aleatórias seguras para uso e
 # ==============================
 # Funções de Geração
 # ==============================
-
+@validar
 def gerar_token(tamanho_bytes: int = 64) -> str:
     """
     Gera um token criptograficamente forte, codificado em Base64 URL-safe.

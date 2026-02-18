@@ -15,7 +15,7 @@ from .gerador import gerar_email  # Para validar se o e-mail gerado pelo front c
 # ==============================
 # Validações de Identidade
 # ==============================
-
+@validar
 def validar_nome(nome: str) -> bool:
     """
     Valida se o nome contém apenas letras e espaços, após remover acentuação.
@@ -39,6 +39,7 @@ def validar_nome(nome: str) -> bool:
     nome_limpo: str = re.sub(r'\s+', ' ', nome_sem_acentos).strip()
     return bool(nome_limpo)
 
+@validar
 def validar_nome_com_acentos(nome: str) -> bool:
     """
     Valida nomes permitindo caracteres acentuados latinos.
@@ -59,7 +60,7 @@ def validar_nome_com_acentos(nome: str) -> bool:
 # ==============================
 # Segurança e Credenciais
 # ==============================
-
+@validar
 def validar_senha(senha: str) -> Dict[str, Any]:
     """
     Verifica a força da senha baseada em requisitos de complexidade.
@@ -89,7 +90,7 @@ def validar_senha(senha: str) -> Dict[str, Any]:
 # ==============================
 # Validações de Comunicação
 # ==============================
-
+@validar
 def validar_email_gerado(nome: str, sobrenome: str, email_front: str) -> bool:
     """
     Valida se o e-mail institucional recebido do front-end é válido para o usuário.
@@ -105,6 +106,7 @@ def validar_email_gerado(nome: str, sobrenome: str, email_front: str) -> bool:
     combinacoes_validas: List[str] = gerar_email(nome, sobrenome)
     return email_front.lower() in combinacoes_validas
 
+@validar
 def validar_telefone_com_55(telefone: str) -> bool:
     """
     Valida o formato E.164 brasileiro com o prefixo do país (+55).
@@ -115,11 +117,13 @@ def validar_telefone_com_55(telefone: str) -> bool:
     padrao: str = r'^\+55[1-9][0-9]9\d{8}$'
     return bool(re.fullmatch(padrao, telefone))
 
+@validar
 def validar_telefone(telefone: str) -> bool:
     """Valida telefone celular brasileiro (DDD + 9 dígitos) sem o prefixo do país."""
     padrao: str = r'^[1-9][0-9]9\d{8}$'
     return bool(re.fullmatch(padrao, telefone))
 
+@validar
 def validar_email_pessoal(email: str) -> bool:
     """
     Valida se o e-mail pessoal pertence a domínios de grandes provedores.
@@ -144,7 +148,7 @@ def validar_email_pessoal(email: str) -> bool:
 # ==============================
 # Arquivos e Datas
 # ==============================
-
+@validar
 def validar_foto(foto: Dict[str, Any]) -> bool:
     """
     Valida a integridade de uma imagem enviada via Base64.
@@ -174,6 +178,7 @@ def validar_foto(foto: Dict[str, Any]) -> bool:
         return False
     return True
 
+@validar
 def validar_data_nascimento(data: datetime | str) -> bool:
     """
     Valida a data de nascimento e impede datas no futuro.
@@ -208,11 +213,13 @@ def validar_data_nascimento(data: datetime | str) -> bool:
 # Categorias de Campos (Enums)
 # ==============================
 
+@validar
 def validar_tipo_email(tipo_email: str) -> bool:
     """Valida a categoria do e-mail: home, other ou work."""
     TIPOS_PERMITIDOS = ["home", "other", "work"]
     return tipo_email in TIPOS_PERMITIDOS
 
+@validar
 def validar_tipo_telefone(tipo_telefone: str) -> bool:
     """Valida a categoria do telefone conforme padrões do CRM/Sistema."""
     TIPOS_PERMITIDOS = ["home","main","mobile","other","private_fax","work","work_fax"]

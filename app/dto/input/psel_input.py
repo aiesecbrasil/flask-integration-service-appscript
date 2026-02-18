@@ -20,7 +20,6 @@ from pydantic import (                   # Biblioteca principal para validação
 
 # Importações de submodelos para composição e saída padronizada
 from .padrao import Comite, EmailItem, TelefoneItem
-from ..output import ModelPodio
 
 # =================================================================
 # 1. MODELOS DE ENTRADA (API -> FLASK)
@@ -35,7 +34,8 @@ class LeadPselInput(BaseModel):
     # Configuração de comportamento do modelo Pydantic
     model_config = {
         "populate_by_name": True, # Permite criar o objeto usando o nome do atributo ou o alias
-        "from_attributes": True   # Permite que o modelo leia dados de objetos de classe (ex: ORM)
+        "from_attributes": True,   # Permite que o modelo leia dados de objetos de classe (ex: ORM)
+        "extra": "forbid"
     }
 
     # Atributos do Lead
@@ -95,10 +95,6 @@ class LeadPselPodio(LeadPselInput):
             "tem-fit-cultural": 3 # ID correspondente ao status inicial no Podio
         }
 
-    def to_json_podio(self) -> ModelPodio:
-        """Instancia o ModelPodio com o dicionário de payload gerado."""
-        return ModelPodio(**self.to_podio_payload())
-
 
 class AtualizarPodioStatusFitCultural(BaseModel):
     """Modelo específico para atualização de status pós-inscição."""
@@ -107,10 +103,6 @@ class AtualizarPodioStatusFitCultural(BaseModel):
     def to_podio_payload(self) -> Dict[str, int]:
         """Gera o payload simplificado para atualização de um único campo."""
         return {"status": self.status}
-
-    def to_json_podio(self) -> ModelPodio:
-        """Gera o objeto de saída validado para a requisição ao Podio."""
-        return ModelPodio(**self.to_podio_payload())
 
 # ==============================
 # Exportações do Módulo

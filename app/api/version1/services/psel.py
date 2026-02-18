@@ -11,7 +11,6 @@ dados e o envio do e-mail para realização do Fit Cultural via App Script.
 import logging                               # Registro de eventos e erros
 from flask import redirect                   # Redirecionamento HTTP para o Fit Cultural
 from typing import Any                       # Tipagem flexível
-from pydantic import ValidationError          # Captura de erros de validação de dados
 from app.repository import (                 # Camada de Dados (Consultas e Escrita)
     cadastrar_lead_psel,
     buscar_token_lead_psel,
@@ -32,12 +31,11 @@ from app.dto import (                        # Objetos de Transferência de Dado
     LeadPselInput,
     LeadPselPodio,
     AtualizarPodioStatusFitCultural,
-    ReponsePselPreCadastro,
     ReponseOutPutPreCadastro,
     HttpStatus
 )
-from app.utils import agora_sem_timezone, formatar_url
-from app.helper import formatar_url_fit      # Helper para gerar URL do formulário externo
+from app.utils import agora_sem_timezone, formatar_url,resolve_exception
+from app.helper import formatar_url_fit,payload_podio     # Helper para gerar URL do formulário externo
 
 # =================================================================
 # SERVIÇO: CADASTRO COMPLETO (ORQUESTRAÇÃO)
@@ -46,7 +44,7 @@ from app.helper import formatar_url_fit      # Helper para gerar URL do formulá
 
 
 @validar
-def cadastrar_lead_psel_service(data: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
+def cadastrar_lead_psel_service(data: LeadPselInput) -> ReponseOutPutPreCadastro | Any:
     """
     Fluxo de Cadastro com Garantia de Consistência (Rollback Multi-sistema).
     """
@@ -57,16 +55,18 @@ def cadastrar_lead_psel_service(data: LeadPselInput) -> tuple[ReponseOutPutPreCa
     try:
         # 1. INTEGRAÇÃO PODIO: Criar o Card
         logger.info("Iniciando fluxo no Podio...")
-        dados_podio = LeadPselPodio(**data.model_dump()).to_json_podio()
+        dados_podio = LeadPselPodio(**data.model_dump()).to_podio_payload()
 
         data_podio, id_podio = adicionar_lead(
             chave="psel-token-podio",
-            data=dados_podio.model_dump(),
+            data=payload_podio(dados_podio),
             APP_ID=APP_ID_PSEL,
+            app=""
         )
 
         if not id_podio:
-            raise Exception("Falha crítica: Podio não retornou ID do item.")
+            erro = resolve_exception(Exception("Falha crítica: Podio não retornou ID do item."))
+            return erro.model_dump(),erro.status_code
 
         # 2. BANCO DE DADOS: Persistência Local (Sem Commit)
         logger.info("Persistindo lead no banco de dados local...")
@@ -75,8 +75,8 @@ def cadastrar_lead_psel_service(data: LeadPselInput) -> tuple[ReponseOutPutPreCa
 
         # 3. ATUALIZAÇÃO PODIO: Status 'E-mail Enviado'
         # Atualizamos o card recém-criado para o estágio de Fit Cultural (Status 203)
-        status_fit = AtualizarPodioStatusFitCultural(status=203).to_json_podio()
-        atualizar_lead(chave="psel-token-podio", data=status_fit.model_dump(), data_response=data_podio)
+        status_fit = AtualizarPodioStatusFitCultural(status=203).to_podio_payload()
+        atualizar_lead(chave="psel-token-podio", data=payload_podio(status_fit), data_response=data_podio)
 
         # 4. GOOGLE APPS SCRIPT: Disparo de E-mail
         params = {"nome": novo_lead.nome, "id": novo_lead.id_podio, "token": novo_lead.token}
@@ -92,18 +92,16 @@ def cadastrar_lead_psel_service(data: LeadPselInput) -> tuple[ReponseOutPutPreCa
         # 5. FINALIZAÇÃO: Commit de segurança
         db.session.commit()
         logger.info(f"Processo concluído com sucesso para o Lead {id_podio}!")
-
+        lead_cadastrado = lead_schema.dump(novo_lead)
         # Montagem da resposta de sucesso
-        resposta = ReponsePselPreCadastro(
-            banco_de_dados=lead_schema.dump(novo_lead),
-            podio=dados_podio
-        )
-        return ReponseOutPutPreCadastro(
+        resposta = ReponseOutPutPreCadastro(
             status="success",
             message="Lead cadastrado e e-mail enviado!",
-            data=resposta,
+            podio=dados_podio,
+            banco_de_dados=lead_cadastrado,
             status_code=HttpStatus.CREATED
-        ).model_dump(), HttpStatus.CREATED
+        )
+        return resposta.model_dump(), resposta.status_code
 
     except Exception as e:
         # MECANISMO DE ROLLBACK: Se o e-mail falhar, não salvamos no banco e limpamos o Podio.
@@ -113,13 +111,8 @@ def cadastrar_lead_psel_service(data: LeadPselInput) -> tuple[ReponseOutPutPreCa
         if data_podio:
             remover_lead("psel-token-podio", data_podio)
             logger.warning(f"Card {id_podio} removido do Podio para evitar dados órfãos.")
-
-        return ReponseOutPutPreCadastro(
-            status="error",
-            message="Erro interno no processamento",
-            data=str(e),
-            status_code=HttpStatus.INTERNAL_ERROR
-        ).model_dump(), HttpStatus.INTERNAL_ERROR
+        erro = resolve_exception(e)
+        return erro.model_dump(),erro.status_code
 
     finally:
         db.session.remove()

@@ -23,7 +23,7 @@ from .gerador import *
 from .formatar import *
 from .validates import *
 from .resolve import *
-
+from .exception import *
 # ==============================
 # Exportação Consolidada
 # ==============================
@@ -36,5 +36,6 @@ __all__ = (
     gerador.__all__ +
     formatar.__all__ +
     validates.__all__ +
-    resolve.__all__
+    resolve.__all__+
+    exception.__all__
 )

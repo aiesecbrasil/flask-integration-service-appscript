@@ -1,12 +1,14 @@
 import logging
+from dataclasses import dataclass
 from ..globals import List,Literal
 from ..dto import HttpStatus
 
 logger = logging.getLogger(__name__)
 
+@dataclass
 class Storage:
     def __init__(self):
-        self.__ip:list = []
+        self.__ip:List[str] = []
     def add_ip(self,ip) -> tuple[str, Literal[HttpStatus.CONFLICT]] | None:
         logger.info(f"Permitindo IP: {ip}")
         if ip in self.__ip:

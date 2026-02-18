@@ -16,7 +16,7 @@ from urllib.parse import urlencode     # Utilitário para converter dicionários
 # ==============================
 # Processamento de Nomes
 # ==============================
-
+@validar
 def formatar_nome(nome: str) -> str:
     """
     Remove acentos de uma string e aplica capitalização (Title Case).
@@ -38,6 +38,7 @@ def formatar_nome(nome: str) -> str:
     # Divide a string, capitaliza cada pedaço e junta novamente com espaços
     return ' '.join(p.capitalize() for p in nome_sem_acentos.split())
 
+@validar
 def formatar_nome_com_acentos(nome: str) -> str:
     """
     Padroniza a capitalização do nome, mas preserva os acentos originais.
@@ -52,6 +53,7 @@ def formatar_nome_com_acentos(nome: str) -> str:
     nome_limpo: str = ' '.join(nome.strip().split())
     return ' '.join(p.capitalize() for p in nome_limpo.split())
 
+@validar
 def limpar_palavras(nome: str, sobrenome: str) -> Tuple[List[str], List[str]]:
     """
     Filtra conectores e partículas gramaticais para preparação de geração de emails.

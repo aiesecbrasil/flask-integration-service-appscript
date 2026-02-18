@@ -20,9 +20,9 @@ from .psel import *
 
 
 
-# O __all__ herda a lista de exportação definida no arquivo psel.py.
+# O __all__ herda a lista de exportação definida no arquivo psel_input.py.
 # Isso mantém o encapsulamento: se você criar funções auxiliares dentro
-# de psel.py que não estejam no __all__ de lá, elas permanecerão
+# de psel_input.py que não estejam no __all__ de lá, elas permanecerão
 # privadas ao módulo e não serão expostas para os Controllers.
 __all__ = [
     psel.__all__

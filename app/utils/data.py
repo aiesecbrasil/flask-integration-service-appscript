@@ -26,7 +26,7 @@ except locale.Error:
 # ==============================
 # Funções de Tempo Atual
 # ==============================
-
+@validar
 def agora_timestamp(cidade_fuso: str = "America/Sao_Paulo") -> float:
     """
     Retorna o timestamp atual (Unix Epoch) no fuso informado.
@@ -42,6 +42,7 @@ def agora_timestamp(cidade_fuso: str = "America/Sao_Paulo") -> float:
     time_zone:float = float(ZoneInfo(cidade_fuso).tzname(datetime.now(fuso))) * SEGUNDOS_HORAS
     return datetime.now(fuso).timestamp() + time_zone
 
+@validar
 def agora(cidade_fuso: str = "America/Sao_Paulo") -> datetime:
     """
     Retorna o objeto datetime atual com informação de fuso horário (aware).
@@ -55,6 +56,7 @@ def agora(cidade_fuso: str = "America/Sao_Paulo") -> datetime:
     fuso = pytz.timezone(str(cidade_fuso))
     return datetime.now(fuso)
 
+@validar
 def agora_sem_timezone(cidade_fuso: str = "America/Sao_Paulo") -> datetime:
     """
     Retorna o datetime atual no fuso informado, mas remove o objeto tzinfo (naive).
@@ -73,6 +75,7 @@ def agora_sem_timezone(cidade_fuso: str = "America/Sao_Paulo") -> datetime:
 # Cálculos e Formatações
 # ==============================
 
+@validar
 def expiracao_3dias(cidade_fuso: str = "America/Sao_Paulo") -> datetime:
     """
     Calcula o momento exato de expiração (72 horas a partir de agora).
@@ -85,6 +88,7 @@ def expiracao_3dias(cidade_fuso: str = "America/Sao_Paulo") -> datetime:
     """
     return agora(cidade_fuso) + timedelta(hours=72)
 
+@validar
 def agora_format_brasil(cidade_fuso: str = "America/Sao_Paulo") -> str:
     """
     Retorna string formatada no padrão brasileiro curto.
@@ -97,6 +101,7 @@ def agora_format_brasil(cidade_fuso: str = "America/Sao_Paulo") -> str:
     """
     return agora(cidade_fuso).strftime("%d/%m/%Y %H:%M:%S")
 
+@validar
 def agora_format_brasil_mes(cidade_fuso: str = "America/Sao_Paulo") -> str:
     """
     Retorna data formatada com mês abreviado em português.
@@ -112,7 +117,7 @@ def agora_format_brasil_mes(cidade_fuso: str = "America/Sao_Paulo") -> str:
 # ==============================
 # Integração com Logging
 # ==============================
-
+@validar
 def logging_time_brasil(*args) -> time.struct_time:
     """
     Hook de conversão de tempo para o Formatador do Logging do Python.

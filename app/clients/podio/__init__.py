@@ -10,7 +10,7 @@ Ele expõe todas as funções validadas para manipulação de leads e autentica�
 # Importações de Submódulos
 # =================================================================
 
-# Importa todas as funções definidas em psel.py (ou podio.py, dependendo do arquivo)
+# Importa todas as funções definidas em psel_input.py (ou podio.py, dependendo do arquivo)
 # como getAcessToken, adicionar_lead, atualizar_lead, etc.
 from .podio import *
 

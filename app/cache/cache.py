@@ -10,6 +10,7 @@ Garante que a aplicação não sobrecarregue serviços externos com chamadas rep
 # Importações (Dependencies)
 # ==============================
 import logging                      # Sistema de logs para monitorar hits/misses do cache
+from dataclasses import dataclass
 from ..globals import (
     jsonify,                        # Converte dicionários Python para resposta JSON do Flask
     Any,                            # Tipo genérico para qualquer valor
@@ -31,7 +32,7 @@ logger = logging.getLogger(__name__)
 # =================================================================
 
 
-
+@dataclass
 class CacheManager:
     """
     Classe responsável por armazenar e validar dados temporários em memória RAM.

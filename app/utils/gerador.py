@@ -12,7 +12,7 @@ from .formatar import limpar_palavras  # Função que remove acentos, conectores
 # ==============================
 # Lógica de Geração de E-mails
 # ==============================
-
+@validar
 def gerar_email(nome: str, sobrenome: str) -> List[str]:
     """
     Gera combinações possíveis de e-mails institucionais baseadas em nome e sobrenome.

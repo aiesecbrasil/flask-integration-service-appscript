@@ -15,7 +15,7 @@ from .manager import migration  # Função responsável por gerenciar a execuç�
 from .api import api  # Blueprint ou conjunto de rotas principais da aplicação
 from .middlewares import verificar_origem, verificar_rota, register_url  # Funções de interceptação
 from .core import  DB_CONNECT  # Configurações de ambiente: domínios e banco
-
+from .utils import handle_validation_error
 
 def create_app() -> OpenAPI:
     """
@@ -50,9 +50,10 @@ def create_app() -> OpenAPI:
         app = OpenAPI(
             __name__,
             info=Info(title="API", version="1.10.0"),
-            validate_response=True  # Valida se a resposta da rota condiz com a documentação
+            validate_response=True,  # Valida se a resposta da rota condiz com a documentação
+            validation_error_status = 422,
+            validation_error_callback = handle_validation_error # <-- O OpenAPI3 chama ela direto!
         )
-
         # ==========================
         # Documentação da API
         # ==========================

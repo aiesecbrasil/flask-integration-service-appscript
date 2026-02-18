@@ -21,7 +21,7 @@ from .psel import *
 
 
 
-# O __all__ herda a lista de exportação definida no arquivo psel.py.
+# O __all__ herda a lista de exportação definida no arquivo psel_input.py.
 # Isso garante consistência: se você adicionar um novo controller no arquivo 
 # base e incluí-lo no __all__ de lá, ele aparecerá aqui automaticamente.
 __all__ = (

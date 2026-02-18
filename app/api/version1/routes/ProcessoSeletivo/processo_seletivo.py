@@ -16,16 +16,18 @@ from app.clients import metadados  # Cliente que conversa com a API do Podio
 from app.config import APP_ID_PSEL  # ID do App de PSEL no Podio (vindo do .env)
 from app.dto import (  # Data Transfer Objects para validação de entrada/saída
     LeadPselInput,
-    ReponseOutPutPreCadastro,
+    ExceptionErrorResponse,
     ParamsInput,
-    Metadados
+    Metadados,
+    ReponseOutPutPreCadastro,
+    ValidationErrorResponse
 )
 from app.api.version1.controller import (  # Lógica de negócio (Controllers) que processa os dados
     cadastrar_lead_psel_controller,
     validar_token_controller
 )
 from app.globals import Any  # Tipagem para flexibilidade em retornos específicos
-
+from app.utils import resolve_exception
 # =================================================================
 # CONFIGURAÇÃO DO ROTEADOR ESPECÍFICO
 # =================================================================
@@ -62,9 +64,9 @@ def buscar_metadados() -> dict:
     "/inscricoes",
     responses={
         201: ReponseOutPutPreCadastro,
-        400: ReponseOutPutPreCadastro,
-        500: ReponseOutPutPreCadastro
-    }
+        422: ValidationErrorResponse,
+        500: ExceptionErrorResponse
+    },
 )
 def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
     """
@@ -77,8 +79,12 @@ def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
         4. Dispara e-mail de confirmação via Google Script.
         5. Reverte operações (Rollback) em caso de falha em qualquer etapa.
     """
-    # Delega a orquestração para o controller especializado
-    return cadastrar_lead_psel_controller(body)
+    try:
+        # Delega a orquestração para o controller especializado
+        return cadastrar_lead_psel_controller(body)
+    except Exception as e:
+        erro = resolve_exception(e)
+        return erro.model_dump(), erro.status_code
 
 
 @processo_seletivo.get("/validarToken", description="Rota responsável por validar token de fit cultural")

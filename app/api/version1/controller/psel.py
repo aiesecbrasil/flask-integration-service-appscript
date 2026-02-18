@@ -10,11 +10,15 @@ integrações externas e persistência.
 # ==============================
 # concurrent.futures: Permite executar validações em paralelo para otimizar o tempo de resposta.
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pydantic import ConfigDict          # Configurações de comportamento dos modelos Pydantic
-from app.dto import (                    # Objetos de transferência de dados e enums de status
+from typing import Any
+
+from pydantic import ConfigDict,ValidationError          # Configurações de comportamento dos modelos Pydantic
+from pymysql.err import error_map
+
+from app.dto import (  # Objetos de transferência de dados e enums de status
     LeadPselInput,
     ReponseOutPutPreCadastro,
-    HttpStatus
+    HttpStatus, BaseErrorResponse, ValidationErrorResponse
 )
 from app.api.version1.services import (  # Camada de Serviço: Onde a lógica de negócio reside
     cadastrar_lead_psel_service,
@@ -24,8 +28,9 @@ from app.utils import (                  # Funções utilitárias de validação
     validar_nome_com_acentos,
     validar_telefone,
     validar_tipo_telefone,
-    validar_data_nascimento
+    validar_data_nascimento,
 )
+from app.globals import List,Dict
 from app.helper import tem_mais_de_31_anos # Regra específica da AIESEC para limite de idade
 
 # =================================================================
@@ -33,7 +38,8 @@ from app.helper import tem_mais_de_31_anos # Regra específica da AIESEC para li
 # =================================================================
 
 @validar
-def cadastrar_lead_psel_controller(data: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
+def cadastrar_lead_psel_controller(data: LeadPselInput) -> tuple[
+                                                               BaseErrorResponse, HttpStatus] | ReponseOutPutPreCadastro | Any:
     """
     Endpoint para pré-cadastro de lead no PSEL.
     Executa validações de conteúdo em paralelo (Fail Fast).
@@ -42,9 +48,9 @@ def cadastrar_lead_psel_controller(data: LeadPselInput) -> tuple[ReponseOutPutPr
     # 1. DEFINIÇÃO DAS TAREFAS DE VALIDAÇÃO
     # Criamos uma estrutura para validar campos únicos.
     tarefas_simples = [
-        (validar_nome_com_acentos, data.nome, "Nome inválido"),
-        (validar_data_nascimento, data.data_nascimento, "Data de nascimento inválida"),
-        (tem_mais_de_31_anos, data.data_nascimento, "Candidato deve ter menos de 31 anos (Limite AIESEC)")
+        (validar_nome_com_acentos, data.nome, ["Nome","Nome inválido"]),
+        (validar_data_nascimento, data.data_nascimento, ["Data de Nascimento","Data de nascimento inválida"]),
+        (tem_mais_de_31_anos, data.data_nascimento, ["Data de Nascimento","Candidato deve ter menos de 31 anos (Limite AIESEC)"])
     ]
 
     # 2. EXECUÇÃO PARALELA (ThreadPoolExecutor)
@@ -55,23 +61,43 @@ def cadastrar_lead_psel_controller(data: LeadPselInput) -> tuple[ReponseOutPutPr
 
         # Adiciona validações dinâmicas para a lista de telefones
         for tel in data.telefones:
-            futures[executor.submit(validar_telefone, tel.numero)] = f"Telefone {tel.numero} inválido"
-            futures[executor.submit(validar_tipo_telefone, tel.tipo)] = f"Tipo de telefone {tel.tipo} inválido"
+            futures[executor.submit(validar_telefone, tel.numero)] = ["numero",f"Telefone {tel.numero} inválido"]
+            futures[executor.submit(validar_tipo_telefone, tel.tipo)] = ["tipo",f"Tipo de telefone {tel.tipo} inválido"]
 
         # 3. MONITORAMENTO DE RESULTADOS (Fail Fast)
         # as_completed retorna as tarefas assim que elas terminam, não importando a ordem.
+        erro_msg:List[str] = []
+        campo:List[str] = []
+        formatar_detalhe:List[Dict[str,str]] = []
+        chave_verificadora:set = set()
+        cont_camp:int = 0
+        cont_erro_msg:int = 0
         for future in as_completed(futures):
             resultado = future.result()
             # Se qualquer validação retornar False, interrompemos e retornamos erro 400.
             if not resultado:
-                erro_msg = futures[future]
-                response_data = ReponseOutPutPreCadastro(**{
-                    "status": "error",
-                    "message": "Falha na validação de conteúdo",
-                    "data": erro_msg,
-                    "status_code": HttpStatus.BAD_REQUEST
-                }).model_dump()
-                return response_data, response_data.get("status_code")
+                campo.append(futures[future][0])
+                erro_msg.append(futures[future][1])
+                chave_unica = f"{campo[cont_camp]}|{erro_msg[cont_erro_msg]}"
+                if chave_unica not in chave_verificadora:
+                    formatar_detalhe.append({
+                        "loc":campo[cont_camp],
+                        "msg":erro_msg[cont_erro_msg]
+                    })
+                    chave_verificadora.add(chave_unica)
+                    cont_camp+=1
+                    cont_erro_msg+=1
+
+        if len(erro_msg) > 0:
+            data = {
+                "type": "ValidationError",
+                "message": "Dados inválidos",
+                "error_details":formatar_detalhe,
+                "status_code": HttpStatus.UNPROCESSABLE_ENTITY
+            }
+            response_data =ValidationErrorResponse(**data)
+            return response_data.model_dump(), response_data.status_code
+    return None
 
     # 4. DELEGAÇÃO PARA O SERVICE
     # Se todas as validações passaram, enviamos para o Service orquestrar as APIs.

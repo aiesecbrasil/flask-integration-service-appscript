@@ -41,7 +41,10 @@ def formatar_url_fit(payload: dict = None) -> str:
     # Retorna a concatenacao da URL base com o fragmento
     return f"{URL_FIT_CULTURAL}#{fragmento_codificado}"
 
+def payload_podio(data:dict):
+    return {"fields": data}
+
 # ==============================
 # Exportacoes
 # ==============================
-__all__ = ["formatar_url_fit"]
+__all__ = ["formatar_url_fit","payload_podio"]

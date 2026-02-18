@@ -9,10 +9,19 @@ EmailItem, TelefoneItem e Comite compõem estruturas usadas em múltiplos DTOs.
 # ==============================
 from pydantic import (
     BaseModel, # Classe base para criação de modelos de dados com validação
-    EmailStr   # Tipo especializado para validar se a string é um e-mail real (formato RFC)
+    EmailStr,   # Tipo especializado para validar se a string é um e-mail real (formato RFC)
+    Field,
+    ConfigDict
 )
+
+import locale
 from app.globals import Dict,Any,datetime
 
+# Configurar locale PT-BR para nomes de mês
+try:
+    locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")  # Linux/macOS
+except locale.Error:
+    locale.setlocale(locale.LC_TIME, "Portuguese_Brazil.1252") # Windows
 # =================================================================
 # 1. SUB-MODELOS DE APOIO
 # =================================================================
@@ -52,7 +61,10 @@ class Comite(BaseModel):
 
 class Metadados(BaseModel):
     data:Dict[str,Any]
-    timestamp:float
+    DataHora:datetime = Field(alias="timestamp")
+
+    model_config = ConfigDict(populate_by_name=True,extra="forbid")
+
 
 # ==============================
 # Exportações do Módulo
