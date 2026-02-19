@@ -12,8 +12,7 @@ integrações externas e persistência.
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-from pydantic import ConfigDict,ValidationError          # Configurações de comportamento dos modelos Pydantic
-from pymysql.err import error_map
+from pydantic import ConfigDict          # Configurações de comportamento dos modelos Pydantic
 
 from app.dto import (  # Objetos de transferência de dados e enums de status
     LeadPselInput,
@@ -26,9 +25,7 @@ from app.api.version1.services import (  # Camada de Serviço: Onde a lógica de
 )
 from app.utils import (                  # Funções utilitárias de validação de Regex e formatos
     validar_nome_com_acentos,
-    validar_telefone,
-    validar_tipo_telefone,
-    validar_data_nascimento,
+    validar_telefone
 )
 from app.globals import List,Dict
 from app.helper import tem_mais_de_31_anos # Regra específica da AIESEC para limite de idade
@@ -49,7 +46,6 @@ def cadastrar_lead_psel_controller(data: LeadPselInput) -> tuple[
     # Criamos uma estrutura para validar campos únicos.
     tarefas_simples = [
         (validar_nome_com_acentos, data.nome, ["Nome","Nome inválido"]),
-        (validar_data_nascimento, data.data_nascimento, ["Data de Nascimento","Data de nascimento inválida"]),
         (tem_mais_de_31_anos, data.data_nascimento, ["Data de Nascimento","Candidato deve ter menos de 31 anos (Limite AIESEC)"])
     ]
 
@@ -62,7 +58,6 @@ def cadastrar_lead_psel_controller(data: LeadPselInput) -> tuple[
         # Adiciona validações dinâmicas para a lista de telefones
         for tel in data.telefones:
             futures[executor.submit(validar_telefone, tel.numero)] = ["numero",f"Telefone {tel.numero} inválido"]
-            futures[executor.submit(validar_tipo_telefone, tel.tipo)] = ["tipo",f"Tipo de telefone {tel.tipo} inválido"]
 
         # 3. MONITORAMENTO DE RESULTADOS (Fail Fast)
         # as_completed retorna as tarefas assim que elas terminam, não importando a ordem.
@@ -97,7 +92,6 @@ def cadastrar_lead_psel_controller(data: LeadPselInput) -> tuple[
             }
             response_data =ValidationErrorResponse(**data)
             return response_data.model_dump(), response_data.status_code
-    return None
 
     # 4. DELEGAÇÃO PARA O SERVICE
     # Se todas as validações passaram, enviamos para o Service orquestrar as APIs.

@@ -28,8 +28,9 @@ load_dotenv(os.path.join(path_atual, ".env"))
 # ==============================
 
 # Importação de utilitários internos após o carregamento do .env (necessário para as configs funcionarem)
-from app.core import setup_logging, IS_NON_PROD
+from app.core import setup_logging, IS_NON_PROD,configurar_idioma
 
+configurar_idioma()
 # Configura o formato de saída, níveis (INFO/DEBUG) e destinos dos logs da aplicação
 setup_logging()
 

@@ -52,6 +52,23 @@ DB_CONNECT = DB_PRODUCAO if IS_PRODUCTION else DB_TESTE
 # Seleciona a URL base para comunicações externas ou redirecionamentos
 URL_CONNECT = URL_PRODUCAO if IS_PRODUCTION else URL_TESTE
 
+import locale
+
+
+def configurar_idioma():
+    # Lista de nomes comuns para o mesmo idioma
+    locales_tentativa = ["pt_BR.UTF-8", "pt_BR.utf8", "pt_BR", "Portuguese_Brazil.1252"]
+
+    for loc in locales_tentativa:
+        try:
+            locale.setlocale(locale.LC_TIME, loc)
+            print(f"Sucesso! Locale definido para: {loc}")
+            return True
+        except locale.Error:
+            continue
+
+    return False
+
 # ==============================
 # Exportações do Módulo
 # ==============================
@@ -61,5 +78,6 @@ __all__ = [
     "URL_CONNECT",         # URL ativa para a instância atual
     "DB_CONNECT",          # Conexão de banco ativa para o SQLAlchemy
     "IS_PRODUCTION",       # Booleano para verificações de segurança/logs
-    "IS_NON_PROD"          # Booleano para habilitar ferramentas de debug
+    "IS_NON_PROD",          # Booleano para habilitar ferramentas de debug
+    "configurar_idioma"
 ]

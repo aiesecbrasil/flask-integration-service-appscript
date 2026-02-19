@@ -38,4 +38,4 @@ __all__ = [
     "migrate",         # Instância Flask-Migrate
     "ma",              # Instância Marshmallow
     "setup_logging",   # Função de inicialização de logs
-] + list(config.__all__) # Adiciona dinamicamente as variáveis de config ao export
+] + config.__all__ # Adiciona dinamicamente as variáveis de config ao export

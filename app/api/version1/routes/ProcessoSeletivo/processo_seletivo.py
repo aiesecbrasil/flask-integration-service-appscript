@@ -87,7 +87,14 @@ def criar_incricao(body: LeadPselInput) -> tuple[ReponseOutPutPreCadastro, int]:
         return erro.model_dump(), erro.status_code
 
 
-@processo_seletivo.get("/validarToken", description="Rota responsável por validar token de fit cultural")
+@processo_seletivo.get("/validarToken",
+                       description="Rota responsável por validar token de fit cultural",
+                       responses={
+                                    422: ValidationErrorResponse,
+                                    500: ExceptionErrorResponse,
+                                    301: None
+                                 }
+                       )
 def validar_token(query: ParamsInput) -> Any:
     """
     Verifica se o token enviado pelo candidato via URL é válido para prosseguir com o teste de fit cultural.

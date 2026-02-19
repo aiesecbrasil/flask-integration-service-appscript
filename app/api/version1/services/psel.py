@@ -13,8 +13,7 @@ from flask import redirect                   # Redirecionamento HTTP para o Fit 
 from typing import Any                       # Tipagem flexível
 from app.repository import (                 # Camada de Dados (Consultas e Escrita)
     cadastrar_lead_psel,
-    buscar_token_lead_psel,
-    buscar_token_id_podio_lead_psel,
+    buscar_lead_psel,
     buscar_data_expiracao,
     db                                       # Instância do SQLAlchemy
 )
@@ -60,8 +59,7 @@ def cadastrar_lead_psel_service(data: LeadPselInput) -> ReponseOutPutPreCadastro
         data_podio, id_podio = adicionar_lead(
             chave="psel-token-podio",
             data=payload_podio(dados_podio),
-            APP_ID=APP_ID_PSEL,
-            app=""
+            APP_ID=APP_ID_PSEL
         )
 
         if not id_podio:
@@ -130,20 +128,21 @@ def validar_token_service(id: int, nome: str, token: str) -> Any:
     """
     try:
         # Verificações de segurança (Fail-Fast)
-        if not buscar_token_lead_psel(token):
+        if not buscar_lead_psel(token):
             return {"erro": "Token inexistente"}, HttpStatus.UNAUTHORIZED
 
-        if not buscar_token_id_podio_lead_psel(id, token):
+        if not buscar_lead_psel(id=id, token=token):
             return {"erro": "Token não pertence a este candidato"}, HttpStatus.UNAUTHORIZED
 
         if agora_sem_timezone() > buscar_data_expiracao(id):
-            return {"erro": "Link expirado. Solicite um novo contato."}, HttpStatus.UNAUTHORIZED
+            return {"erro": "Link expirado. Solicite um novo link."}, HttpStatus.UNAUTHORIZED
 
         # Redirecionamento 301 para o Typeform/Google Forms parametrizado
         target_url = formatar_url_fit({"id": id, "nome": nome})
         return redirect(target_url), HttpStatus.MOVED_PERMANENTLY
 
     except Exception as e:
-        return {"erro": f"Erro na validação: {str(e)}"}, HttpStatus.INTERNAL_ERROR
+        erro = resolve_exception(e)
+        return erro.model_dump(), erro.status_code
 
 __all__ = ["cadastrar_lead_psel_service", "validar_token_service"]

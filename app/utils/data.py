@@ -16,12 +16,7 @@ from datetime import timedelta  # Utilizado para cálculos de aritmética de dat
 from zoneinfo import ZoneInfo
 from ..globals import datetime  # Instância global de datetime para consistência no projeto
 
-# Configura o ambiente para processar nomes de meses e dias da semana em Português do Brasil
-try:
-    locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
-except locale.Error:
-    # Fallback para sistemas onde o locale UTF-8 pode não estar disponível
-    locale.setlocale(locale.LC_TIME, "Portuguese_Brazil.1252")
+
 
 # ==============================
 # Funções de Tempo Atual

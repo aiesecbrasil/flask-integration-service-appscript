@@ -178,53 +178,6 @@ def validar_foto(foto: Dict[str, Any]) -> bool:
         return False
     return True
 
-@validar
-def validar_data_nascimento(data: datetime | str) -> bool:
-    """
-    Valida a data de nascimento e impede datas no futuro.
-
-    Args:
-        data (datetime | str): Objeto datetime ou string de data.
-
-    Returns:
-        bool: True se a data existir e for menor ou igual a hoje.
-    """
-    nascimento = None
-
-    if isinstance(data, datetime):
-        nascimento = data
-    elif isinstance(data, str):
-        # Tenta converter diversos formatos comuns de data
-        try:
-            nascimento = datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            try:
-                # Trata formato ISO (comum em APIs Javascript)
-                nascimento = datetime.fromisoformat(data.replace('Z', '+00:00'))
-            except ValueError:
-                return False
-
-    if not nascimento or nascimento.date() > date.today():
-        return False
-
-    return True
-
-# ==============================
-# Categorias de Campos (Enums)
-# ==============================
-
-@validar
-def validar_tipo_email(tipo_email: str) -> bool:
-    """Valida a categoria do e-mail: home, other ou work."""
-    TIPOS_PERMITIDOS = ["home", "other", "work"]
-    return tipo_email in TIPOS_PERMITIDOS
-
-@validar
-def validar_tipo_telefone(tipo_telefone: str) -> bool:
-    """Valida a categoria do telefone conforme padrões do CRM/Sistema."""
-    TIPOS_PERMITIDOS = ["home","main","mobile","other","private_fax","work","work_fax"]
-    return tipo_telefone in TIPOS_PERMITIDOS
-
 # ==============================
 # Exportações
 # ==============================
@@ -233,9 +186,6 @@ __all__ = [
     "validar_foto",
     "validar_nome",
     "validar_senha",
-    "validar_tipo_email",
-    "validar_tipo_telefone",
-    "validar_data_nascimento",
     "validar_email_gerado",
     "validar_email_pessoal",
     "validar_telefone_com_55",
