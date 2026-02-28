@@ -18,6 +18,7 @@ from ..globals import (
     Dict,                           # Definição de dicionários tipados
     Tuple                           # Definição de tuplas para retorno (status, data)
 )
+from threading import Lock          # Mecanismo de sincronização para evitar concorrência por chave
 from ..config import CACHE_TTL      # Tempo limite (em segundos) definido no ambiente global
 from ..utils import (
     agora_timestamp,                # Função para obter tempo atual (Horário de São Paulo)
@@ -28,7 +29,6 @@ from ..utils import (
 # CONFIGURAÇÕES DE LOGGING
 # =================================================================
 
-# Permite rastrear economia de processamento e falhas de sincronização.
 logger = logging.getLogger(__name__)
 
 # =================================================================
@@ -40,6 +40,7 @@ class CacheManager:
     """
     Controla o ciclo de vida de dados voláteis armazenados em memória.
     """
+
     def __init__(self):
         """
         Inicializa o repositório central de cache.
@@ -47,6 +48,18 @@ class CacheManager:
         # store: Dicionário que mapeia uma 'chave' para um objeto contendo os dados e o tempo de criação.
         # Exemplo: { "podio_token": { "data": {...}, "timestamp": 1700000000 } }
         self.store: Dict[str, Dict[str, Any]] = {}
+
+        # locks: Dicionário responsável por manter um Lock exclusivo para cada chave de cache.
+        # Isso impede que múltiplas requisições recalcularem o mesmo recurso simultaneamente.
+        self.locks: Dict[str, Lock] = {}
+
+    def get_lock(self, key: str) -> Lock:
+        """
+        Retorna (ou cria) um Lock exclusivo associado a uma chave específica.
+        """
+        if key not in self.locks:
+            self.locks[key] = Lock()
+        return self.locks[key]
 
     def get_or_set(self, key: str, fetch: Callable[[], Tuple[Any, int]], baixando: str):
         """
@@ -67,39 +80,49 @@ class CacheManager:
 
         # --- 1. CENÁRIO: CACHE HIT (Sucesso na Memória) ---
         if key in self.store:
-            # item: Recupera o registro do cache para verificação de tempo.
             item = self.store[key]
 
-            # Verifica se o tempo desde a criação é menor que o tempo de vida permitido (TTL).
             if now - item["timestamp"] < CACHE_TTL:
                 logger.info(f"AIESEC Cache | HIT: '{baixando}' recuperado da memória.")
                 return jsonify(item["data"]), 200
 
-        # --- 2. CENÁRIO: CACHE MISS (Inexistente ou Expirado) ---
-        logger.info(f"AIESEC Cache | MISS: '{baixando}' expirado ou novo. Sincronizando com a fonte...")
+        # lock: Obtém o mecanismo de sincronização exclusivo da chave solicitada.
+        lock = self.get_lock(key)
 
-        # result: Chama a função (callback) para obter os dados originais.
-        result = fetch()
+        # --- BLOCO CRÍTICO PROTEGIDO ---
+        # Apenas uma thread por vez pode executar este trecho para a mesma chave.
+        with lock:
 
-        # status, data: Resolve o resultado (aguarda se for assíncrono) e extrai status e corpo.
-        status, data = resolve_response(result)
+            # Double check: Revalida o cache após adquirir o Lock,
+            # pois outra requisição pode já ter atualizado os dados.
+            if key in self.store:
+                item = self.store[key]
+                if now - item["timestamp"] < CACHE_TTL:
+                    logger.info(f"AIESEC Cache | HIT (Post-Lock): '{baixando}' recuperado após sincronização.")
+                    return jsonify(item["data"]), 200
 
-        # --- 3. PERSISTÊNCIA E ATUALIZAÇÃO ---
-        # Armazena os dados e reseta o cronômetro para o próximo ciclo de cache.
-        self.store[key] = {
-            "data": data,
-            "timestamp": now
-        }
+            # --- 2. CENÁRIO: CACHE MISS (Inexistente ou Expirado) ---
+            logger.info(f"AIESEC Cache | MISS: '{baixando}' expirado ou novo. Sincronizando com a fonte...")
 
-        logger.info(f"AIESEC Security | Sincronização de '{baixando}' concluída com sucesso!")
+            result = fetch()
 
-        return jsonify(data), status
+            status, data = resolve_response(result)
+
+            # --- 3. PERSISTÊNCIA E ATUALIZAÇÃO ---
+            self.store[key] = {
+                "data": data,
+                "timestamp": now
+            }
+
+            logger.info(f"AIESEC Security | Sincronização de '{baixando}' concluída com sucesso!")
+
+            return jsonify(data), status
+
 
 # ==============================
 # Singleton (Instância Única)
 # ==============================
 
-# cache: Objeto global utilizado para manter o estado do cache entre todas as requisições.
 cache = CacheManager()
 
 # ==============================

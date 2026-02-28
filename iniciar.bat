@@ -1,0 +1,6 @@
+@echo off
+echo Limpando processos antigos...
+taskkill /f /im ngrok.exe 2>nul
+taskkill /f /im python.exe 2>nul
+echo Iniciando projeto...
+honcho start

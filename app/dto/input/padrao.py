@@ -14,7 +14,8 @@ from pydantic import (
     EmailStr,        # Tipo de campo especializado que valida se a string segue o formato de e-mail (RFC 5322).
     Field,           # Utilizado para definir metadados dos campos, como descrições, aliases e exemplos para o JSON Schema.
     ConfigDict,      # Objeto de configuração para definir comportamentos do modelo (ex: permitir aliases, proibir campos extras).
-    field_serializer # Decorador que permite customizar como um campo específico é convertido para JSON (ex: formatar datas).
+    field_serializer, # Decorador que permite customizar como um campo específico é convertido para JSON (ex: formatar datas).
+    field_validator
 )
 from pydantic_core import (
     core_schema      # Fornece acesso às estruturas de baixo nível do Pydantic para criar validadores customizados complexos.
@@ -78,7 +79,7 @@ class EmailItem(BaseModel):
     Estrutura para itens de e-mail categorizados.
 
     Attributes:
-        tipo (CategoriaDispositivo): Define a categoria do e-mail (ex: 'home', 'work').
+        tipo (CategoriaContato): Define a categoria do e-mail (ex: 'home', 'work').
         email (EmailStr): O endereço de e-mail com validação sintática RFC.
     """
     # Categoria/Etiqueta do endereço de e-mail (ex: pessoal, trabalho)
@@ -92,13 +93,38 @@ class EmailItem(BaseModel):
         }
     )
 
+    @field_validator('tipo', mode="before")
+    @classmethod
+    def tipo_valido(cls, tipo: CategoriaContato) -> CategoriaContato:
+        """Valida se a categoria do e-mail é permitida.
+
+            Args:
+                tipo: Categoria a ser validada.
+
+            Returns:
+                CategoriaContato: A categoria validada.
+
+            Raises:
+                ValueError: Se o tipo for exclusivo de dispositivos móveis/fax.
+        """
+        lista_exclusivo_tipo_mobile = {
+            CategoriaContato.MOBILE,
+            CategoriaContato.MAIN,
+            CategoriaContato.PRIVATE_FAX,
+            CategoriaContato.WORK_FAX
+        }
+        #verifica se o tipo é um tipo exclusivo do mobile
+        if tipo in lista_exclusivo_tipo_mobile:
+            raise ValueError(f"A categoria '{tipo}' não é permitida para endereços de e-mail.")
+        return tipo
+
 
 class TelefoneItem(BaseModel):
     """
     Estrutura para itens de telefone compatível com a API do Podio.
 
     Attributes:
-        tipo (CategoriaDispositivo): Define se o telefone é residencial, móvel, etc.
+        tipo (CategoriaContato): Define se o telefone é residencial, móvel, etc.
         numero (str): O número de telefone formatado como string.
     """
     # Categoria/Etiqueta do número de telefone (ex: celular, fixo)
@@ -204,7 +230,7 @@ class DataNascimento:
 
         raise ValueError("Tipo de dado inválido para data de nascimento.")
 
-    def strftime(self, param):
+    def strftime(self, param:str):
         pass
 
 
@@ -270,11 +296,13 @@ class Metadados(BaseModel):
                 {
                     "type": "string",
                     "format": "date-time",
-                    "description": "Formato textual padrão ISO 8601"
+                    "description": "Formato textual padrão ISO 8601",
+                    "example": "2026-02-18T17:40:00Z",
                 },
                 {
                     "type": "number",
-                    "description": "Formato numérico Unix Timestamp (segundos desde a época de 1970)"
+                    "description": "Formato numérico Unix Timestamp (segundos desde a época de 1970)",
+                    "example": 1242434.04334,
                 }
             ]
         }

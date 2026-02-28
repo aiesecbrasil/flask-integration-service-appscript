@@ -37,7 +37,8 @@ from typing import (
     Callable,  # Indica um objeto que pode ser chamado (função)
     Iterable,  # Indica objetos que podem ser iterados (listas, sets, generators)
     Union,  # Permite que uma variável aceite mais de um tipo (ex: Union[int, str])
-    Literal
+    Literal,
+    Type
 )
 
 # ==============================
@@ -73,6 +74,7 @@ __all__ = [
     "Iterable",
     "Union",
     "Literal",
+    "Type",
 
     # URL Utils
     "urlparse",

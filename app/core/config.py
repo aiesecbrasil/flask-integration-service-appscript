@@ -18,6 +18,7 @@ from ..config import (
     URL_PRODUCAO,       # URL base da API em produção
     URL_TESTE           # URL base da API em desenvolvimento
 )
+import locale
 
 # ==============================
 # Identificação de Ambiente
@@ -51,8 +52,6 @@ DB_CONNECT = DB_PRODUCAO if IS_PRODUCTION else DB_TESTE
 
 # Seleciona a URL base para comunicações externas ou redirecionamentos
 URL_CONNECT = URL_PRODUCAO if IS_PRODUCTION else URL_TESTE
-
-import locale
 
 
 def configurar_idioma():

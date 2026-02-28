@@ -28,7 +28,9 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+# ignora o config global
+Procfile.txt
+/config/ngrok.yml.lnk
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -142,12 +144,14 @@ celerybeat.pid
 .env
 .envrc
 .venv
+.venv_linux
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
 
+*.bat
 # Spyder project settings
 .spyderproject
 .spyproject

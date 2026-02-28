@@ -87,18 +87,20 @@ def verificar_origem() -> None | tuple[dict[str, str], Literal[HttpStatus.UNAUTH
     # ==========================
     # 3. Validação de IP (Acesso à Documentação)
     # ==========================
-    # Restrição de segurança: Apenas IPs na lista branca podem ver a estrutura da API.
-    # 1. Extração do caminho da URL (ex: /api/v1/new-lead-ogx/...)
-    path: str = request.path
+    # Verifica se o ambiente é de produção
+    if IS_PRODUCTION:
+        # Restrição de segurança: Apenas IPs na lista branca podem ver a estrutura da API.
+        # 1. Extração do caminho da URL (ex: /api/v1/new-lead-ogx/...)
+        path: str = request.path
 
-    # 2. Segmentação do path para identificação do serviço
-    parts: list[str] = path.strip("/").split("/")
-    if parts[1] in ["docs"] or parts[0] in ["apidoc","openapi","static"]:
-        allow_ip_list = storage.get_ip()
-        if request.headers.get("X-Forwarded-For") not in allow_ip_list:
-            logger.error("AIESEC Security | Bloqueio de IP: Tentativa não autorizada em /docs.")
-            return {"erro": "Sua maquina não está autorizada a entrar nessa rota"},HttpStatus.UNAUTHORIZED
-        return None
+        # 2. Segmentação do path para identificação do serviço
+        parts: list[str] = path.strip("/").split("/")
+        if parts[1] in ["docs"] or parts[0] in ["apidoc","openapi","static"]:
+            allow_ip_list = storage.get_ip()
+            if request.headers.get("X-Forwarded-For") not in allow_ip_list:
+                logger.error("AIESEC Security | Bloqueio de IP: Tentativa não autorizada em /docs.")
+                return {"erro": "Sua maquina não está autorizada a entrar nessa rota"},HttpStatus.UNAUTHORIZED
+            return None
 
     # ==========================
     # 4. Validação de API Key
