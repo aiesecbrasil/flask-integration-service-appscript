@@ -15,7 +15,8 @@ from pydantic import (
     Field,           # Utilizado para definir metadados dos campos, como descrições, aliases e exemplos para o JSON Schema.
     ConfigDict,      # Objeto de configuração para definir comportamentos do modelo (ex: permitir aliases, proibir campos extras).
     field_serializer, # Decorador que permite customizar como um campo específico é convertido para JSON (ex: formatar datas).
-    field_validator
+    field_validator,
+    RootModel
 )
 from pydantic_core import (
     core_schema      # Fornece acesso às estruturas de baixo nível do Pydantic para criar validadores customizados complexos.
@@ -50,7 +51,6 @@ class CategoriaContato(str, Enum):
     OTHER = "other"               # Outras categorias não listadas
     PRIVATE_FAX = "private_fax"   # Fax pessoal
     WORK_FAX = "work_fax"         # Fax profissional
-
 
 class Autorizacao(IntEnum):
     """
@@ -128,7 +128,10 @@ class TelefoneItem(BaseModel):
         numero (str): O número de telefone formatado como string.
     """
     # Categoria/Etiqueta do número de telefone (ex: celular, fixo)
-    tipo: CategoriaContato = Field(description="Categoria do telefone")
+    tipo: CategoriaContato = Field(
+        description="Categoria do telefone"
+    )
+
 
     # String contendo o número de telefone (geralmente apenas dígitos)
     numero: str = Field(
@@ -279,39 +282,38 @@ class Metadados(BaseModel):
     # 'validation_alias' permite que o Pydantic procure a chave 'timestamp' no JSON de entrada,
     # mapeando-a internamente para o atributo 'DataHora'.
     # A tipagem Union aceita múltiplos formatos: objetos datetime, strings ISO, ou números (Unix Timestamp).
-    DataHora: Union[datetime, str] = Field(
+    DataHora: Union[datetime,str] = Field(
         validation_alias="timestamp",
         title="Timestamp de Processamento",
-        description="Data e hora em que a operação foi registrada. Aceita String ISO 8601 ou Unix Timestamp.",
-
+        description="Data e hora em que a operação foi registrada. Aceita String ISO 8601 ou Unix Timestamp e sai como ISO.",
         # Metadados estendidos para a geração do esquema JSON (Swagger/OpenAPI)
         json_schema_extra={
-            # O exemplo visual utiliza o pipe '|' para demonstrar as duas formas aceitas de envio
-            # sem sugerir que o campo espera uma lista (array).
-            "example": "2026-02-18T17:40:00Z(string) | 1242434.04334(timestamp)",
-
-            # 'anyOf' informa à documentação que o valor pode ser validado contra diferentes esquemas,
-            # refletindo a versatilidade do Pydantic em converter tipos numéricos para datetime.
-            "anyOf": [
-                {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Formato textual padrão ISO 8601",
-                    "example": "2026-02-18T17:40:00Z",
-                },
-                {
-                    "type": "number",
-                    "description": "Formato numérico Unix Timestamp (segundos desde a época de 1970)",
-                    "example": 1242434.04334,
-                }
-            ]
+            "example": "2026-02-18T17:40:00Z"
         }
     )
 
     # Configurações do Pydantic para este modelo
     model_config = ConfigDict(
         populate_by_name=True, # Permite popular usando o nome do atributo ou o alias
-        extra="forbid"         # Rejeita campos desconhecidos no payload para maior segurança
+        extra="forbid",       # Rejeita campos desconhecidos no payload para maior segurança
+        # 'anyOf' informa à documentação que o valor pode ser validado contra diferentes esquemas,
+        # refletindo a versatilidade do Pydantic em converter tipos numéricos para datetime.
+        json_schema_extra={
+            "anyOf": [
+                {
+                    "title": "Datatime",
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Formato textual padrão ISO 8601",
+                    "example":[]
+                },
+                {
+                    "title": "TimeStamp",
+                    "type": "number",
+                    "description": "Formato numérico Unix Timestamp (segundos desde a época de 1970)"
+                }
+            ]
+        }
     )
 
     @field_serializer('DataHora')
